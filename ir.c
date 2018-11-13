@@ -17,7 +17,7 @@ static int gen_ir_sub(Vector *v, Node *node) {
         return r;
     }
 
-    assert(node->ty == '+' || node->ty == '-');
+    assert(strchr("+-*", node->ty));
 
     int lhs = gen_ir_sub(v, node->lhs);
     int rhs = gen_ir_sub(v, node->rhs);
