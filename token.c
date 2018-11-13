@@ -18,7 +18,7 @@ Vector *tokenize(char *p) {
             continue;
         }
 
-        if (strchr("+-*", *p)) {
+        if (strchr("+-*/", *p)) {
             add_token(v, *p, p);
             i++;
             p++;
