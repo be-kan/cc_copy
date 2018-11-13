@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdnoreturn.h>
 #include <string.h>
 
 enum {
@@ -78,7 +79,7 @@ Node *new_node_num (int val) {
     return node;
 }
 
-void error(char *fmt, ...) {
+noreturn void error(char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     vfprintf(stderr, fmt, ap);
