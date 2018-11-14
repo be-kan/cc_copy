@@ -20,7 +20,7 @@ static Vector *scan(char *p) {
             continue;
         }
 
-        if (strchr("+-*/;", *p)) {
+        if (strchr("+-*/;=", *p)) {
             add_token(v, *p, p);
             i++;
             p++;
@@ -36,10 +36,11 @@ static Vector *scan(char *p) {
             char *name = strndup(p, len);
             int ty = (intptr_t)map_get(keywords, name);
             if (!ty) {
-               error("unknown identifier: %s", name);
+              ty = TK_IDENT;
             }
 
-            add_token(v, ty, p);
+            Token *t = add_token(v, ty, p);
+            t->name = name;
             i++;
             p += len;
             continue;
@@ -52,7 +53,7 @@ static Vector *scan(char *p) {
             continue;
         }
 
-        error("cannnot tokenize: %s", p);
+        error("cannot tokenize: %s", p);
     }
 
     add_token(v, TK_EOF, p);

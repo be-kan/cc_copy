@@ -32,6 +32,7 @@ bool map_exists(Map *map, char *key);
 
 enum {
     TK_NUM = 256,
+    TK_IDENT,
     TK_RETURN,
     TK_EOF,
 };
@@ -39,6 +40,7 @@ enum {
 typedef struct {
     int ty;
     int val;
+    char *name;
     char *input;
 } Token;
 
@@ -46,6 +48,7 @@ Vector *tokenize(char *p);
 
 enum {
     ND_NUM = 256,
+    ND_IDENT,
     ND_RETURN,
     ND_COMP_STMT,
     ND_EXPR_STMT,
@@ -56,6 +59,7 @@ typedef struct Node {
     struct Node *lhs;
     struct Node *rhs;
     int val;
+    char *name;
     struct Node *expr;
     Vector *stmts;
 } Node;
@@ -66,6 +70,9 @@ enum {
     IR_IMM,
     IR_MOV,
     IR_RETURN,
+    IR_ALLOCA,
+    IR_LOAD,
+    IR_STORE,
     IR_KILL,
     IR_NOP,
 };
@@ -82,3 +89,5 @@ extern char *regs[];
 void alloc_regs(Vector *irv);
 
 void gen_x86(Vector *irv);
+
+void util_test();
