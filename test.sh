@@ -17,6 +17,12 @@ try() {
   fi
 }
 
+util_test() {
+  ./9cc -test
+}
+
+util_test
+
 try 10 'return 2*3+4;'
 try 14 'return 2+3*4;'
 try 26 'return 2*3+4*5;'
