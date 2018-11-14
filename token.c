@@ -1,5 +1,7 @@
 #include "9cc.h"
 
+Map *keywords;
+
 static Token *add_token(Vector *v, int ty, char *input) {
     Token *t = malloc(sizeof(Token));
     t->ty = ty;
@@ -8,7 +10,7 @@ static Token *add_token(Vector *v, int ty, char *input) {
     return t;
 }
 
-Vector *tokenize(char *p) {
+static Vector *scan(char *p) {
     Vector *v = new_vec();
 
     int i = 0;
@@ -18,10 +20,28 @@ Vector *tokenize(char *p) {
             continue;
         }
 
-        if (strchr("+-*/", *p)) {
+        if (strchr("+-*/;", *p)) {
             add_token(v, *p, p);
             i++;
             p++;
+            continue;
+        }
+
+        if (isalpha(*p) || *p == '_') {
+            int len = 1;
+            while (isalpha(p[len]) || isdigit(p[len]) || p[len] == '_') {
+                len++;
+            }
+
+            char *name = strndup(p, len);
+            int ty = (intptr_t)map_get(keywords, name);
+            if (!ty) {
+               error("unknown identifier: %s", name);
+            }
+
+            add_token(v, ty, p);
+            i++;
+            p += len;
             continue;
         }
 
@@ -32,10 +52,16 @@ Vector *tokenize(char *p) {
             continue;
         }
 
-        fprintf(stderr, "cannot tokenize: %s", p);
-        exit(1);
+        error("cannnot tokenize: %s", p);
     }
 
     add_token(v, TK_EOF, p);
     return v;
+}
+
+Vector *tokenize(char *p) {
+    keywords = new_map();
+    map_put(keywords, "return", (void *)TK_RETURN);
+
+    return scan(p);
 }

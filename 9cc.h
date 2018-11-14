@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <assert.h>
 #include <ctype.h>
 #include <stdarg.h>
@@ -30,6 +31,7 @@ void *map_get(Map *map, char *key);
 
 enum {
     TK_NUM = 256,
+    TK_RETURN,
     TK_EOF,
 };
 
@@ -43,6 +45,9 @@ Vector *tokenize(char *p);
 
 enum {
     ND_NUM = 256,
+    ND_RETURN,
+    ND_COMP_STMT,
+    ND_EXPR_STMT,
 };
 
 typedef struct Node {
@@ -50,6 +55,8 @@ typedef struct Node {
     struct Node *lhs;
     struct Node *rhs;
     int val;
+    struct Node *expr;
+    Vector *stmts;
 } Node;
 
 Node *parse(Vector *tokens);
