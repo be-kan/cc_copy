@@ -10,6 +10,7 @@
 #include <string.h>
 
 noreturn void error(char *fmt, ...);
+char *format(char *fmt, ...);
 
 typedef struct {
     void **data;
@@ -33,6 +34,7 @@ bool map_exists(Map *map, char *key);
 enum {
     TK_NUM = 256,
     TK_IDENT,
+    TK_IF,
     TK_RETURN,
     TK_EOF,
 };
@@ -49,6 +51,7 @@ Vector *tokenize(char *p);
 enum {
     ND_NUM = 256,
     ND_IDENT,
+    ND_IF,
     ND_RETURN,
     ND_COMP_STMT,
     ND_EXPR_STMT,
@@ -62,15 +65,19 @@ typedef struct Node {
     char *name;
     struct Node *expr;
     Vector *stmts;
+    struct Node *cond;
+    struct Node *then;
 } Node;
 
 Node *parse(Vector *tokens);
 
 enum {
-    IR_IMM,
+    IR_IMM = 256,
     IR_ADD_IMM,
     IR_MOV,
     IR_RETURN,
+    IR_LABEL,
+    IR_UNLESS,
     IR_ALLOCA,
     IR_LOAD,
     IR_STORE,
@@ -86,11 +93,32 @@ typedef struct {
     int imm;
 } IR;
 
+enum {
+    IR_TY_NOARG,
+    IR_TY_REG,
+    IR_TY_LABEL,
+    IR_TY_REG_REG,
+    IR_TY_REG_IMM,
+    IR_TY_REG_LABEL,
+};
+
+typedef struct {
+    int op;
+    char *name;
+    int ty;
+} IRInfo;
+
+extern IRInfo irinfo[];
+IRInfo *get_irinfo(IR *ir);
+
 Vector *gen_ir(Node *node);
+void dump_ir(Vector *irv);
 
 extern char *regs[];
 void alloc_regs(Vector *irv);
 
 void gen_x86(Vector *irv);
+
+char **argv;
 
 void util_test();
