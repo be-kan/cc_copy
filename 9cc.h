@@ -35,6 +35,7 @@ enum {
     TK_NUM = 256,
     TK_IDENT,
     TK_IF,
+    TK_ELSE,
     TK_RETURN,
     TK_EOF,
 };
@@ -67,6 +68,7 @@ typedef struct Node {
     Vector *stmts;
     struct Node *cond;
     struct Node *then;
+    struct Node *els;
 } Node;
 
 Node *parse(Vector *tokens);
@@ -77,6 +79,7 @@ enum {
     IR_MOV,
     IR_RETURN,
     IR_LABEL,
+    IR_JMP,
     IR_UNLESS,
     IR_ALLOCA,
     IR_LOAD,
