@@ -64,6 +64,7 @@ enum {
     ND_IDENT,
     ND_IF,
     ND_RETURN,
+    ND_CALL,
     ND_COMP_STMT,
     ND_EXPR_STMT,
 };
@@ -73,12 +74,13 @@ typedef struct Node {
     struct Node *lhs;
     struct Node *rhs;
     int val;
-    char *name;
     struct Node *expr;
     Vector *stmts;
+    char *name;
     struct Node *cond;
     struct Node *then;
     struct Node *els;
+    Vector *args;
 } Node;
 
 Node *parse(Vector *tokens);
@@ -88,6 +90,7 @@ enum {
     IR_ADD_IMM,
     IR_MOV,
     IR_RETURN,
+    IR_CALL,
     IR_LABEL,
     IR_JMP,
     IR_UNLESS,
@@ -102,8 +105,9 @@ typedef struct {
     int op;
     int lhs;
     int rhs;
-    bool has_imm;
-    int imm;
+    char *name;
+    int nargs;
+    int args[6];
 } IR;
 
 enum {
@@ -113,6 +117,7 @@ enum {
     IR_TY_REG_REG,
     IR_TY_REG_IMM,
     IR_TY_REG_LABEL,
+    IR_TY_CALL,
 };
 
 typedef struct {

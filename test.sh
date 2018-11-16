@@ -5,7 +5,7 @@ try() {
   input="$2"
 
   ./9cc "$input" > tmp.s
-  gcc -o tmp tmp.s
+  gcc -o tmp tmp.s tmplus.o
   ./tmp
   actual="$?"
 
@@ -16,6 +16,8 @@ try() {
     exti 1
   fi
 }
+
+echo 'int plus(int x, int y) { return x + y; }' | gcc -xc -c -o tmplus.o -
 
 util_test() {
   ./9cc -test
@@ -42,5 +44,7 @@ try 2 "if (1) return 2; return 3;"
 try 3 "if (0) return 2; return 3;"
 try 2 'if (1) return 2; else return 3;'
 try 3 'if (0) return 2; else return 3;'
+
+try 5 'return _plus(2, 3);'
 
 echo OK

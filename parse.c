@@ -46,8 +46,21 @@ static Node *term() {
         return node;
     }
     if (t->ty == TK_IDENT) {
-        node->ty = ND_IDENT;
         node->name = t->name;
+        if (!consume('(')) {
+            node->ty = ND_IDENT;
+            return node;
+        }
+        node->ty = ND_CALL;
+        node->args = new_vec();
+        if (consume(')')) {
+            return node;
+        }
+        vec_push(node->args, assign());
+        while (consume(',')) {
+            vec_push(node->args, assign());
+        }
+        expect(')');
         return node;
     }
 
