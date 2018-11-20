@@ -155,6 +155,9 @@ static Node *stmt() {
             }
             node->name = t->name;
             pos++;
+            if (consume('=')) {
+                node->init = assign();
+            }
             expect(';');
             return node;
         }
