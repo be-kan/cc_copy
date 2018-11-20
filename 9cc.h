@@ -46,6 +46,8 @@ enum {
     TK_IDENT,
     TK_IF,
     TK_ELSE,
+    TK_LOGAND,
+    TK_LOGOR,
     TK_RETURN,
     TK_EOF,
 };
@@ -63,6 +65,8 @@ enum {
     ND_NUM = 256,
     ND_IDENT,
     ND_IF,
+    ND_LOGAND,
+    ND_LOGOR,
     ND_RETURN,
     ND_CALL,
     ND_FUNC,
@@ -98,6 +102,7 @@ enum {
     IR_RETURN,
     IR_CALL,
     IR_LABEL,
+    IR_LT,
     IR_JMP,
     IR_UNLESS,
     IR_LOAD,
@@ -120,6 +125,7 @@ enum {
     IR_TY_NOARG,
     IR_TY_REG,
     IR_TY_IMM,
+    IR_TY_JMP,
     IR_TY_LABEL,
     IR_TY_REG_REG,
     IR_TY_REG_IMM,
@@ -144,6 +150,7 @@ Vector *gen_ir(Vector *nodes);
 void dump_ir(Vector *irv);
 
 extern char *regs[];
+extern char *regs8[];
 void alloc_regs(Vector *irv);
 
 void gen_x86(Vector *fns);

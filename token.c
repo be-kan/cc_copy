@@ -1,7 +1,5 @@
 #include "9cc.h"
 
-Map *keywords;
-
 static Token *add_token(Vector *v, int ty, char *input) {
     Token *t = malloc(sizeof(Token));
     t->ty = ty;
@@ -10,21 +8,45 @@ static Token *add_token(Vector *v, int ty, char *input) {
     return t;
 }
 
+static Map *keywords;
+
+static struct {
+    char *name;
+    int ty;
+} symbols[] = {
+        {"&&", TK_LOGAND},
+        {"||", TK_LOGOR},
+        {NULL, 0},
+};
+
 static Vector *scan(char *p) {
     Vector *v = new_vec();
 
     int i = 0;
+loop:
     while (*p) {
         if (isspace(*p)) {
             p++;
             continue;
         }
 
-        if (strchr("+-*/;=(),{}", *p)) {
+        if (strchr("+-*/;=(),{}<>", *p)) {
             add_token(v, *p, p);
             i++;
             p++;
             continue;
+        }
+
+        for (int i = 0; symbols[i].name; i++) {
+            char *name = symbols[i].name;
+            int len = strlen(name);
+            if (strncmp(p, name, len)) {
+                continue;
+            }
+            add_token(v, symbols[i].ty, p);
+            i++;
+            p += len;
+            goto loop;
         }
 
         if (isalpha(*p) || *p == '_') {
