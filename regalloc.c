@@ -24,11 +24,6 @@ static int alloc(int ir_reg) {
     return -1;
 }
 
-static void kill(int r) {
-    assert(used[r]);
-    used[r] = false;
-}
-
 static void visit(Vector *irv) {
     reg_map[0] = 0;
     used[0] = true;
@@ -55,7 +50,8 @@ static void visit(Vector *irv) {
         }
 
         if (ir->op == IR_KILL) {
-            kill(ir->lhs);
+            assert(used[ir->lhs]);
+            used[ir->lhs] = false;
             ir->op = IR_NOP;
         }
     }

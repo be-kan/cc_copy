@@ -70,6 +70,6 @@ try 0 'int _main() { return 0>1; }'
 try 1 'int _main() { return 1>0; }'
 
 try 60 'int _main() { int sum=0; int i; for (i=10; i<15; i=i+1) sum = sum + i; return sum;}'
-try 89 'int _main() { int i=1; int j=1; int k; for (k=0; k<10; k=k+1) { int m=i+j; i=j; j=m; } return i;}'
+try 89 'int _main() { int i=1; int j=1; for (int k=0; k<10; k=k+1) { int m=i+j; i=j; j=m; } return i;}'
 
 echo OK
