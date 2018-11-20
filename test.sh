@@ -25,6 +25,7 @@ util_test() {
 
 util_test
 
+try 1 '_main() { return 1; }'
 try 10 '_main() { return 2*3+4; }'
 try 14 '_main() { return 2+3*4; }'
 try 26 '_main() { return 2*3+4*5; }'

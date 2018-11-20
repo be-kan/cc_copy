@@ -1,6 +1,6 @@
 #include "9cc.h"
 
-char *regs[] = {"r10", "r11", "rbx", "r12", "r13", "r14", "r15"};
+char *regs[] = {"rbp", "r10", "r11", "rbx", "r12", "r13", "r14", "r15"};
 
 static bool used[sizeof(regs) / sizeof(*regs)];
 static int *reg_map;
@@ -14,8 +14,8 @@ static int alloc(int ir_reg) {
 
     for (int i = 0; i < sizeof(regs) / sizeof(*regs); i++) {
         if (used[i]) continue;
-        used[i] = true;
         reg_map[ir_reg] = i;
+        used[i] = true;
         return i;
     }
 
@@ -29,6 +29,9 @@ static void kill(int r) {
 }
 
 static void visit(Vector *irv) {
+    reg_map[0] = 0;
+    used[0] = true;
+
     for (int i = 0; i < irv->len; i++) {
         IR *ir = irv->data[i];
         IRInfo *info = get_irinfo(ir);
