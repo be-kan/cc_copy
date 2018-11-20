@@ -131,7 +131,6 @@ typedef struct {
 
 typedef struct {
     char *name;
-    int args[6];
     int stacksize;
     Vector *ir;
 } Function;
@@ -146,7 +145,5 @@ extern char *regs[];
 void alloc_regs(Vector *irv);
 
 void gen_x86(Vector *fns);
-
-char **argv;
 
 void util_test();
