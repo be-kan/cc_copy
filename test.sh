@@ -49,5 +49,7 @@ try 3 '_main() { if (0) return 2; else return 3; }'
 try 5 '_main() { return _plus(2, 3); }'
 try 1 'one() { return 1; } _main() { return one(); }'
 try 3 'one() { return 1; } two() { return 2; } _main() { return one()+two(); }'
+try 6 'mul(a,b) { return a*b; } _main() { return mul(2,3);}'
+try 21 'add(a,b,c,d,e,f) { return a+b+c+d+e+f; } _main() { return add(1,2,3,4,5,6); }'
 
 echo OK

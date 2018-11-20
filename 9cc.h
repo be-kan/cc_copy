@@ -89,7 +89,7 @@ Vector *parse(Vector *tokens);
 
 enum {
     IR_IMM = 256,
-    IR_ADD_IMM,
+    IR_SUB_IMM,
     IR_MOV,
     IR_RETURN,
     IR_CALL,
@@ -99,6 +99,7 @@ enum {
     IR_LOAD,
     IR_STORE,
     IR_KILL,
+    IR_SAVE_ARGS,
     IR_NOP,
 };
 
@@ -114,6 +115,7 @@ typedef struct {
 enum {
     IR_TY_NOARG,
     IR_TY_REG,
+    IR_TY_IMM,
     IR_TY_LABEL,
     IR_TY_REG_REG,
     IR_TY_REG_IMM,
