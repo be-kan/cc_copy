@@ -44,6 +44,7 @@ char *sb_get(StringBuilder *sb);
 enum {
     TK_NUM = 256,
     TK_IDENT,
+    TK_INT,
     TK_IF,
     TK_ELSE,
     TK_FOR,
@@ -65,6 +66,7 @@ Vector *tokenize(char *p);
 enum {
     ND_NUM = 256,
     ND_IDENT,
+    ND_VARDEF,
     ND_IF,
     ND_FOR,
     ND_LOGAND,
