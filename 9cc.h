@@ -128,7 +128,6 @@ enum {
 };
 
 typedef struct {
-    int op;
     char *name;
     int ty;
 } IRInfo;
@@ -140,7 +139,6 @@ typedef struct {
 } Function;
 
 extern IRInfo irinfo[];
-IRInfo *get_irinfo(IR *ir);
 
 Vector *gen_ir(Vector *nodes);
 void dump_ir(Vector *irv);
