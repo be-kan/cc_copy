@@ -157,6 +157,18 @@ static Node *stmt() {
                 node->els = stmt();
             }
             return node;
+        case TK_FOR:
+            pos++;
+            node->ty = ND_FOR;
+            expect('(');
+            node->init = assign();
+            expect(';');
+            node->cond = assign();
+            expect(';');
+            node->inc = assign();
+            expect(')');
+            node->body = stmt();
+            return node;
         case TK_RETURN:
             pos++;
             node->ty = ND_RETURN;

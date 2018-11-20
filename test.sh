@@ -69,4 +69,6 @@ try 0 '_main() { return 0>0; }'
 try 0 '_main() { return 0>1; }'
 try 1 '_main() { return 1>0; }'
 
+try 60 '_main() { sum=0; for (i=10; i<15; i=i+1) sum = sum + i; return sum;}'
+
 echo OK

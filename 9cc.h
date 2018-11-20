@@ -46,6 +46,7 @@ enum {
     TK_IDENT,
     TK_IF,
     TK_ELSE,
+    TK_FOR,
     TK_LOGAND,
     TK_LOGOR,
     TK_RETURN,
@@ -65,6 +66,7 @@ enum {
     ND_NUM = 256,
     ND_IDENT,
     ND_IF,
+    ND_FOR,
     ND_LOGAND,
     ND_LOGOR,
     ND_RETURN,
@@ -85,6 +87,8 @@ typedef struct Node {
     struct Node *cond;
     struct Node *then;
     struct Node *els;
+    struct Node *init;
+    struct Node *inc;
     struct Node *body;
     Vector *args;
 } Node;
