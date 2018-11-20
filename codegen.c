@@ -70,18 +70,18 @@ void gen(Function *fn) {
                     printf("  mov [rbp-%d], %s\n", (i+1)*8, argreg[i]);
                 }
                 break;
-            case '+':
+            case IR_ADD:
                 printf("  add %s, %s\n", regs[ir->lhs], regs[ir->rhs]);
                 break;
-            case '-':
+            case IR_SUB:
                 printf("  sub %s, %s\n", regs[ir->lhs], regs[ir->rhs]);
                 break;
-            case '*':
+            case IR_MUL:
                 printf("  mov rax, %s\n", regs[ir->rhs]);
                 printf("  mul %s\n", regs[ir->lhs]);
                 printf("  mov %s, rax\n", regs[ir->lhs]);
                 break;
-            case '/':
+            case IR_DIV:
                 printf("  mov rax, %s\n", regs[ir->lhs]);
                 printf("  cqo\n");
                 printf("  div %s\n", regs[ir->rhs]);
