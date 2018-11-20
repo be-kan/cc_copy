@@ -67,6 +67,7 @@ enum {
     ND_NUM = 256,
     ND_IDENT,
     ND_VARDEF,
+    ND_LVAR,
     ND_IF,
     ND_FOR,
     ND_LOGAND,
@@ -92,10 +93,14 @@ typedef struct Node {
     struct Node *init;
     struct Node *inc;
     struct Node *body;
+    int stacksize;
+    int offset;
     Vector *args;
 } Node;
 
 Vector *parse(Vector *tokens);
+
+void sema(Vector *nodes);
 
 enum {
     IR_ADD,

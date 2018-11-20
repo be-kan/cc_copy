@@ -21,12 +21,6 @@ IRInfo irinfo[] = {
         [IR_UNLESS] = {"UNLESS", IR_TY_REG_LABEL},
 };
 
-static Vector *code;
-static Map *vars;
-static int regno;
-static int stacksize;
-static int label;
-
 static char *tostr(IR *ir) {
     IRInfo info = irinfo[ir->op];
     switch (info.ty) {
@@ -69,6 +63,10 @@ void dump_ir(Vector *irv) {
     }
 }
 
+static Vector *code;
+static int regno;
+static int label;
+
 static IR *add(int op, int lhs, int rhs) {
     IR *ir = calloc(1, sizeof(IR));
     ir->op = op;
@@ -79,17 +77,12 @@ static IR *add(int op, int lhs, int rhs) {
 }
 
 static int gen_lval(Node *node) {
-    if (node->ty != ND_IDENT) {
-        error("not an lvalue");
+    if (node->ty != ND_LVAR) {
+        error("not an lvalue: %d (%s)", node->ty, node->name);
     }
-    if (!map_exists(vars, node->name)) {
-        error("undefined variable: %s", node->name);
-    }
-
     int r = regno++;
-    int off = (intptr_t)map_get(vars, node->name);
     add(IR_MOV, r, 0);
-    add(IR_SUB_IMM, r, off);
+    add(IR_SUB_IMM, r, node->offset);
     return r;
 }
 
@@ -139,7 +132,7 @@ static int gen_expr(Node *node) {
             add(IR_LABEL, y, -1);
             return r1;
         }
-        case ND_IDENT: {
+        case ND_LVAR: {
             int r = gen_lval(node);
             add(IR_LOAD, r, r);
             return r;
@@ -183,15 +176,13 @@ static int gen_expr(Node *node) {
 
 static void gen_stmt(Node *node) {
     if (node->ty == ND_VARDEF) {
-        stacksize += 8;
-        map_put(vars, node->name, (void * )(intptr_t)stacksize);
         if (!node->init) {
             return;
         }
         int rhs = gen_expr(node->init);
         int lhs = regno++;
         add(IR_MOV, lhs, 0);
-        add(IR_SUB_IMM, lhs, stacksize);
+        add(IR_SUB_IMM, lhs, node->offset);
         add(IR_STORE, lhs, rhs);
         add(IR_KILL, lhs, -1);
         add(IR_KILL, rhs, -1);
@@ -199,24 +190,25 @@ static void gen_stmt(Node *node) {
     }
 
     if (node->ty == ND_IF) {
-        int r = gen_expr(node->cond);
-        int x = label++;
-
-        add(IR_UNLESS, r, x);
-        add(IR_KILL, r, -1);
-
-        gen_stmt(node->then);
-
-        if (!node->els) {
+        if (node->els) {
+            int x = label++;
+            int y = label++;
+            int r = gen_expr(node->cond);
+            add(IR_UNLESS, r, x);
+            add(IR_KILL, r, -1);
+            gen_stmt(node->then);
+            add(IR_JMP, y, -1);
             add(IR_LABEL, x, -1);
-            return;
+            gen_stmt(node->els);
+            add(IR_LABEL, y, -1);
         }
 
-        int y = label++;
-        add(IR_JMP, y, -1);
+        int x = label++;
+        int r = gen_expr(node->cond);
+        add(IR_UNLESS, r, x);
+        add(IR_KILL, r, -1);
+        gen_stmt(node->then);
         add(IR_LABEL, x, -1);
-        gen_stmt(node->els);
-        add(IR_LABEL, y, -1);
         return;
     }
 
@@ -259,23 +251,6 @@ static void gen_stmt(Node *node) {
     error("unknown node: %d", node->ty);
 }
 
-static void gen_args(Vector *nodes) {
-    if (nodes->len == 0) {
-        return;
-    }
-
-    add(IR_SAVE_ARGS, nodes->len, -1);
-
-    for (int i = 0; i < nodes->len; i++) {
-        Node *node = nodes->data[i];
-        if (node->ty != ND_IDENT) {
-            error("bad parameter");
-        }
-        stacksize += 8;
-        map_put(vars, node->name, (void *)(intptr_t)stacksize);
-    }
-}
-
 Vector *gen_ir(Vector *nodes) {
     Vector *v = new_vec();
 
@@ -284,16 +259,16 @@ Vector *gen_ir(Vector *nodes) {
         assert(node->ty == ND_FUNC);
 
         code = new_vec();
-        vars = new_map();
         regno = 1;
-        stacksize = 0;
 
-        gen_args(node->args);
+        if (nodes->len > 0) {
+            add(IR_SAVE_ARGS, node->args->len, -1);
+        }
         gen_stmt(node->body);
 
         Function *fn = malloc(sizeof(Function));
         fn->name = node->name;
-        fn->stacksize = stacksize;
+        fn->stacksize = node->stacksize;
         fn->ir = code;
         vec_push(v, fn);
     }
