@@ -12,6 +12,7 @@ static struct {
     char *name;
     int ty;
 } symbols[] = {
+        {"char", TK_CHAR},
         {"else", TK_ELSE},
         {"for", TK_FOR},
         {"if", TK_IF},

@@ -56,6 +56,7 @@ enum {
     TK_NUM = 256,
     TK_IDENT,
     TK_INT,
+    TK_CHAR,
     TK_IF,
     TK_ELSE,
     TK_FOR,
@@ -96,6 +97,7 @@ enum {
 
 enum {
     INT,
+    CHAR,
     PTR,
     ARY,
 };
@@ -139,10 +141,13 @@ enum {
     IR_LT,
     IR_JMP,
     IR_UNLESS,
+    IR_LOAD8,
     IR_LOAD32,
     IR_LOAD64,
+    IR_STORE8,
     IR_STORE32,
     IR_STORE64,
+    IR_STORE8_ARG,
     IR_STORE32_ARG,
     IR_STORE64_ARG,
     IR_KILL,
