@@ -98,5 +98,6 @@ try 89 'int _main() { int i=1; int j=1; for (int k=0; k<10; k=k+1) { int m=i+j; 
 try 8 'int _main() { int *p = _alloc1(3, 5); return *p + *(p + 1); }'
 try 9 'int _main() { int *p = _alloc2(2, 7); return *p + *(p - 1); }'
 try 2 'int _main() { int **p = _alloc_ptr_ptr(2); return **p; }'
+try 3 'int _main() { int ary[2]; *ary=1; *(ary+1)=2; return *ary + *(ary+1); }'
 
 echo OK

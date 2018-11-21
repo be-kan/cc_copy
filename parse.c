@@ -4,13 +4,6 @@ static Vector *tokens;
 static int pos;
 static Type int_ty = {INT, NULL};
 
-static Type *ptr_of(Type *base) {
-    Type *ty = calloc(1, sizeof(Type));
-    ty->ty = PTR;
-    ty->ptr_of = base;
-    return ty;
-}
-
 static Node *assign();
 
 static void expect(int ty) {
@@ -191,6 +184,21 @@ static Node *decl() {
     }
     node->name = t->name;
     pos++;
+
+    Vector *ary_size = new_vec();
+    while (consume('[')) {
+        Node *len = term();
+        if (len->op != ND_NUM) {
+            error("number expected");
+        }
+        vec_push(ary_size, len);
+        expect(']');
+    }
+    for (int i = ary_size->len - 1; i >= 0; i--) {
+        Node *len = ary_size->data[i];
+        node->ty = ary_of(node->ty, len->val);
+    }
+
     if (consume('=')) {
         node->init = assign();
     }
