@@ -17,6 +17,7 @@ static struct {
         {"if", TK_IF},
         {"int", TK_INT},
         {"return", TK_RETURN},
+        {"sizeof", TK_SIZEOF},
         {"&&", TK_LOGAND},
         {"||", TK_LOGOR},
         {NULL, 0},

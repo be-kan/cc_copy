@@ -101,4 +101,8 @@ try 2 'int _main() { int **p = _alloc_ptr_ptr(2); return **p; }'
 try 3 'int _main() { int ary[2]; *ary=1; *(ary+1)=2; return *ary + *(ary+1); }'
 try 5 'int _main() { int x; int *p = &x; x = 5; return *p; }'
 
+try 4 'int _main() { int x; return sizeof(x); }'
+try 8 'int _main() { int *x; return sizeof x; }'
+try 16 'int _main() { int x[4]; return sizeof x; }'
+
 echo OK

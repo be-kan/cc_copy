@@ -62,6 +62,7 @@ enum {
     TK_LOGAND,
     TK_LOGOR,
     TK_RETURN,
+    TK_SIZEOF,
     TK_EOF,
 };
 
@@ -86,6 +87,7 @@ enum {
     ND_LOGAND,
     ND_LOGOR,
     ND_RETURN,
+    ND_SIZEOF,
     ND_CALL,
     ND_FUNC,
     ND_COMP_STMT,
