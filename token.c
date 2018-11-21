@@ -1,7 +1,7 @@
 #include "9cc.h"
 
 static Token *add_token(Vector *v, int ty, char *input) {
-    Token *t = malloc(sizeof(Token));
+    Token *t = calloc(1, sizeof(Token));
     t->ty = ty;
     t->input = input;
     vec_push(v, t);
@@ -22,10 +22,9 @@ static struct {
         {NULL, 0},
 };
 
-static Vector *scan(char *p) {
+Vector *tokenize(char *p) {
     Vector *v = new_vec();
 
-    int i = 0;
 loop:
     while (*p) {
         if (isspace(*p)) {
@@ -35,7 +34,6 @@ loop:
 
         if (strchr("+-*/;=(),{}<>", *p)) {
             add_token(v, *p, p);
-            i++;
             p++;
             continue;
         }
@@ -47,7 +45,6 @@ loop:
                 continue;
             }
             add_token(v, symbols[i].ty, p);
-            i++;
             p += len;
             goto loop;
         }
@@ -59,15 +56,15 @@ loop:
             }
             Token *t = add_token(v, TK_IDENT, p);
             t->name = strndup(p, len);
-            i++;
             p += len;
             continue;
         }
 
         if (isdigit(*p)) {
             Token *t = add_token(v, TK_NUM, p);
-            t->val = strtol(p, &p, 10);
-            i++;
+            for (; isdigit(*p); p++) {
+                t->val = t->val * 10 + *p - '0';
+            }
             continue;
         }
 
@@ -76,8 +73,4 @@ loop:
 
     add_token(v, TK_EOF, p);
     return v;
-}
-
-Vector *tokenize(char *p) {
-    return scan(p);
 }

@@ -111,6 +111,7 @@ typedef struct Node {
 } Node;
 
 Vector *parse(Vector *tokens);
+int size_of(Type *ty);
 
 void sema(Vector *nodes);
 
