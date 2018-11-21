@@ -1,27 +1,41 @@
 #include "9cc.h"
 
+static Type int_ty = {INT, NULL};
+
+typedef struct {
+    Type *ty;
+    int offset;
+} Var;
+
 static Map *vars;
 static int stacksize;
 
 static void walk(Node *node) {
-    switch (node->ty) {
+    switch (node->op) {
         case ND_NUM:
             return;
-        case ND_IDENT:
-            if (!map_exists(vars, node->name)) {
+        case ND_IDENT: {
+            Var *var = map_get(vars, node->name);
+            if (!var) {
                 error("undefined variable: %s", node->name);
             }
-            node->ty = ND_LVAR;
-            node->offset = (intptr_t)map_get(vars, node->name);
+            node->ty = var->ty;
+            node->op = ND_LVAR;
+            node->offset = var->offset;
             return;
-        case ND_VARDEF:
+        }
+        case ND_VARDEF: {
             stacksize += 8;
-            map_put(vars, node->name, (void *)(intptr_t)stacksize);
             node->offset = stacksize;
+            Var *var = calloc(1, sizeof(Var));
+            var->ty = node->ty;
+            var->offset = stacksize;
+            map_put(vars, node->name, var);
             if (node->init) {
                 walk(node->init);
             }
             return;
+        }
         case ND_IF:
             walk(node->cond);
             walk(node->then);
@@ -45,7 +59,9 @@ static void walk(Node *node) {
         case ND_LOGOR:
             walk(node->lhs);
             walk(node->rhs);
+            node->ty = node->lhs->ty;
             return;
+        case ND_DEREF:
         case ND_RETURN:
             walk(node->expr);
             return;
@@ -53,6 +69,7 @@ static void walk(Node *node) {
             for (int i = 0; i < node->args->len; i++) {
                 walk(node->args->data[i]);
             }
+            node->ty = &int_ty;
             return;
         case ND_FUNC:
             for (int i = 0; i < node->args->len; i++) {
@@ -76,7 +93,7 @@ static void walk(Node *node) {
 void sema(Vector *nodes) {
     for (int i = 0; i < nodes->len; i++) {
         Node *node = nodes->data[i];
-        assert(node->ty == ND_FUNC);
+        assert(node->op == ND_FUNC);
         vars = new_map();
         stacksize = 0;
         walk(node);

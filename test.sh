@@ -5,7 +5,7 @@ try() {
   input="$2"
 
   ./9cc "$input" > tmp.s
-  gcc -o tmp tmp.s tmplus.o
+  gcc -o tmp tmp.s tmp-test.o
   ./tmp
   actual="$?"
 
@@ -17,7 +17,15 @@ try() {
   fi
 }
 
-echo 'int plus(int x, int y) { return x + y; }' | gcc -xc -c -o tmplus.o -
+cat <<EOF | gcc -xc -c -o tmp-test.o -
+
+int plus(int x, int y) { return x + y; }
+int *alloc(int x) {
+  static int arr[1];
+  arr[0] = x;
+  return arr;
+}
+EOF
 
 util_test() {
   ./9cc -test
@@ -71,5 +79,7 @@ try 1 'int _main() { return 1>0; }'
 
 try 60 'int _main() { int sum=0; int i; for (i=10; i<15; i=i+1) sum = sum + i; return sum;}'
 try 89 'int _main() { int i=1; int j=1; for (int k=0; k<10; k=k+1) { int m=i+j; i=j; j=m; } return i;}'
+
+try 42 'int _main() { int *p = _alloc(42); return *p; }'
 
 echo OK

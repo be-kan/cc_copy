@@ -70,6 +70,7 @@ enum {
     ND_LVAR,
     ND_IF,
     ND_FOR,
+    ND_DEREF,
     ND_LOGAND,
     ND_LOGOR,
     ND_RETURN,
@@ -79,8 +80,19 @@ enum {
     ND_EXPR_STMT,
 };
 
-typedef struct Node {
+enum {
+    INT,
+    PTR,
+};
+
+typedef struct Type {
     int ty;
+    struct Type *ptr_of;
+} Type;
+
+typedef struct Node {
+    int op;
+    Type *ty;
     struct Node *lhs;
     struct Node *rhs;
     int val;
