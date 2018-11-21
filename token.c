@@ -32,12 +32,6 @@ loop:
             continue;
         }
 
-        if (strchr("+-*/;=(),{}<>[]", *p)) {
-            add_token(v, *p, p);
-            p++;
-            continue;
-        }
-
         for (int i = 0; symbols[i].name; i++) {
             char *name = symbols[i].name;
             int len = strlen(name);
@@ -47,6 +41,12 @@ loop:
             add_token(v, symbols[i].ty, p);
             p += len;
             goto loop;
+        }
+
+        if (strchr("+-*/;=(),{}<>[]&", *p)) {
+            add_token(v, *p, p);
+            p++;
+            continue;
         }
 
         if (isalpha(*p) || *p == '_') {
