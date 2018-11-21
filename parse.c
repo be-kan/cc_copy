@@ -28,11 +28,18 @@ static bool is_typename() {
     return t->ty == TK_INT;
 }
 
-static Node *new_node(int op, Node *lhs, Node *rhs) {
+static Node *new_binop(int op, Node *lhs, Node *rhs) {
     Node *node = calloc(1, sizeof(Node));
     node->op = op;
     node->lhs = lhs;
     node->rhs = rhs;
+    return node;
+}
+
+static Node *new_expr(int op, Node *expr) {
+    Node *node = calloc(1, sizeof(Node));
+    node->op = op;
+    node->expr = expr;
     return node;
 }
 
@@ -80,10 +87,7 @@ static Node *mul();
 static Node *postfix() {
     Node *lhs = primary();
     while (consume('[')) {
-        Node *node = calloc(1, sizeof(Node));
-        node->op = ND_DEREF;
-        node->expr = new_node('+', lhs, primary());
-        lhs = node;
+        lhs = new_expr(ND_DEREF, new_binop('+', lhs, primary()));
         expect(']');
     }
     return lhs;
@@ -91,22 +95,13 @@ static Node *postfix() {
 
 static Node *unary() {
     if (consume('*')) {
-        Node *node = calloc(1, sizeof(Node));
-        node->op = ND_DEREF;
-        node->expr = mul();
-        return node;
+        return new_expr(ND_DEREF, mul());
     }
     if (consume('&')) {
-        Node *node = calloc(1, sizeof(Node));
-        node->op = ND_ADDR;
-        node->expr = mul();
-        return node;
+        return new_expr(ND_ADDR, mul());
     }
     if (consume(TK_SIZEOF)) {
-        Node *node = calloc(1, sizeof(Node));
-        node->op = ND_SIZEOF;
-        node->expr = unary();
-        return node;
+        return new_expr(ND_SIZEOF, unary());
     }
     return postfix();
 }
@@ -119,7 +114,7 @@ static Node *mul() {
             return lhs;
         }
         pos++;
-        lhs = new_node(t->ty, lhs, unary());
+        lhs = new_binop(t->ty, lhs, unary());
     }
 }
 
@@ -131,7 +126,7 @@ static Node *add() {
             return lhs;
         }
         pos++;
-        lhs = new_node(t->ty, lhs, mul());
+        lhs = new_binop(t->ty, lhs, mul());
     }
 }
 
@@ -141,12 +136,12 @@ static Node *rel() {
         Token *t = tokens->data[pos];
         if (t->ty == '<') {
             pos++;
-            lhs = new_node('<', lhs, add());
+            lhs = new_binop('<', lhs, add());
             continue;
         }
         if (t->ty == '>') {
             pos++;
-            lhs = new_node('<', add(), lhs);
+            lhs = new_binop('<', add(), lhs);
             continue;
         }
         return lhs;
@@ -161,7 +156,7 @@ static Node *logand() {
             return lhs;
         }
         pos++;
-        lhs = new_node(ND_LOGAND, lhs, rel());
+        lhs = new_binop(ND_LOGAND, lhs, rel());
     }
 }
 
@@ -173,14 +168,14 @@ static Node *logor() {
             return lhs;
         }
         pos++;
-        lhs = new_node(ND_LOGOR, lhs, logand());
+        lhs = new_binop(ND_LOGOR, lhs, logand());
     }
 }
 
 static Node *assign() {
     Node *lhs = logor();
     if (consume('=')) {
-        return new_node('=', lhs, logor());
+        return new_binop('=', lhs, logor());
     }
     return lhs;
 }
@@ -249,9 +244,7 @@ static Node *param() {
 }
 
 static Node *expr_stmt() {
-    Node *node = calloc(1, sizeof(Node));
-    node->op = ND_EXPR_STMT;
-    node->expr = assign();
+    Node *node = new_expr(ND_EXPR_STMT, assign());
     expect(';');
     return node;
 }

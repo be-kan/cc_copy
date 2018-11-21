@@ -113,7 +113,7 @@ static Node *walk(Node *node, bool decay) {
             Node *expr = walk(node->expr, false);
             Node *ret = calloc(1, sizeof(Node));
             ret->op = ND_NUM;
-            ret->ty = INT; // warning
+            ret->ty = &int_ty; // fixed 'INT -> &int_ty'
             ret->val = size_of(expr->ty);
             return ret;
         }
