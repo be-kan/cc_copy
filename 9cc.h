@@ -123,13 +123,22 @@ typedef struct Node {
     struct Node *inc;
     struct Node *body;
     int stacksize;
-    Vector *strings;
+    Vector *globals;
     int offset;
     Vector *args;
 } Node;
 
 Vector *parse(Vector *tokens);
 int size_of(Type *ty);
+
+typedef struct {
+    Type *ty;
+    bool is_local;
+    int offset;
+    char *name;
+    char *data;
+    int len;
+} Var;
 
 void sema(Vector *nodes);
 
@@ -192,7 +201,7 @@ typedef struct {
 typedef struct {
     char *name;
     int stacksize;
-    Vector *strings;
+    Vector *globals;
     Vector *ir;
 } Function;
 

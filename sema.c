@@ -2,16 +2,9 @@
 
 static Type int_ty = {INT, NULL};
 
-typedef struct {
-    Type *ty;
-    bool is_local;
-    int offset;
-    char *name;
-} Var;
-
 static int str_label;
 static Map *vars;
-static Vector *strings;
+static Vector *globals;
 static int stacksize;
 
 static void swap(Node **p, Node **q) {
@@ -33,13 +26,18 @@ static Node *walk(Node *node, bool decay) {
         case ND_NUM:
             return node;
         case ND_STR: {
-            char *name = format(".L.str%d", str_label++);
-            node->name = name;
-            vec_push(strings, node);
+            Var *var = calloc(1, sizeof(Var));
+            vec_push(globals, var);
+            var->ty = node->ty;
+            var->is_local = false;
+            var->name = format(".L.str%d", str_label++);
+            var->data = node->str;
+            var->len = strlen(node->str) + 1;
+
             Node *ret = calloc(1, sizeof(Node));
             ret->op = ND_GVAR;
             ret->ty = node->ty;
-            ret->name = name;
+            ret->name = var->name;
             return walk(ret, decay);
         }
         case ND_IDENT: {
@@ -167,10 +165,10 @@ void sema(Vector *nodes) {
         Node *node = nodes->data[i];
         assert(node->op == ND_FUNC);
         vars = new_map();
-        strings = new_vec();
+        globals = new_vec();
         stacksize = 0;
         walk(node, true);
         node->stacksize = stacksize;
-        node->strings = strings;
+        node->globals = globals;
     }
 }
