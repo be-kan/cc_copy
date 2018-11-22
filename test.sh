@@ -119,4 +119,9 @@ try 0 'int _main() { char *p = "abc"; return p[3]; }'
 
 try 1 'int _main() { int x = 1; { int x = 2; } return x; }'
 
+try 0 'int x; int _main() { return x; }'
+try 5 'int x; int _main() { x = 5; return x; }'
+try 20 'int x[5]; int _main() { return sizeof(x); }'
+try 15 'int x[5]; int _main() { x[0] = 5; x[4] = 10; return x[0] + x[4]; }'
+
 echo OK

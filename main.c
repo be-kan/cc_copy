@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
 
     Vector *tokens = tokenize(input);
     Vector *nodes = parse(tokens);
-    sema(nodes);
+    Vector *globals = sema(nodes);
     Vector *fns = gen_ir(nodes);
 
     if (dump_ir1) {
@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
         dump_ir(fns);
     }
 
-    gen_x86(fns);
+    gen_x86(globals, fns);
 
     return 0;
 }

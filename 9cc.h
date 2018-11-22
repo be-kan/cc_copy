@@ -112,10 +112,11 @@ typedef struct Node {
     struct Node *lhs;
     struct Node *rhs;
     int val;
-    char *str;
     struct Node *expr;
     Vector *stmts;
     char *name;
+    char *data;
+    int len;
     struct Node *cond;
     struct Node *then;
     struct Node *els;
@@ -140,7 +141,7 @@ typedef struct {
     int len;
 } Var;
 
-void sema(Vector *nodes);
+Vector *sema(Vector *nodes);
 
 enum {
     IR_ADD,
@@ -207,7 +208,7 @@ typedef struct {
 
 extern IRInfo irinfo[];
 
-Vector *gen_ir(Vector *nodes);
+Vector *gen_ir(Vector *fns);
 void dump_ir(Vector *irv);
 
 extern char *regs[];
@@ -215,6 +216,6 @@ extern char *regs8[];
 extern char *regs32[];
 void alloc_regs(Vector *irv);
 
-void gen_x86(Vector *fns);
+void gen_x86(Vector *globals, Vector *fns);
 
 void util_test();
