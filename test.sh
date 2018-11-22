@@ -134,4 +134,6 @@ try 45 'int _main() { int x=0; int y=0; do { y=y+x; x=x+1; } while (x < 10); ret
 
 try 5 'extern int _global_arr[1]; int _main() { return _global_arr[0]; }'
 
+try 8 'int _main() { return 3 + ({ return 5; }); }'
+
 echo OK
