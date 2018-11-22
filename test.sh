@@ -112,4 +112,9 @@ try 16 'int _main() { int x[4]; return sizeof x; }'
 try 5 'int _main() { char x = 5; return x; }'
 try 42 'int _main() { int x = 0; char *p = &x; p[0] = 42; return x; }'
 
+try 97 'int _main() { char *p = "abc"; return p[0]; }'
+try 98 'int _main() { char *p = "abc"; return p[1]; }'
+try 99 'int _main() { char *p = "abc"; return p[2]; }'
+try 0 'int _main() { char *p = "abc"; return p[3]; }'
+
 echo OK

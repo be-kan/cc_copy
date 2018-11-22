@@ -67,6 +67,12 @@ static Node *primary() {
         node->val = t->val;
         return node;
     }
+    if (t->ty == TK_STR) {
+        node->ty = ary_of(&char_ty, strlen(t->str));
+        node->op = ND_STR;
+        node->str = t->str;
+        return node;
+    }
     if (t->ty == TK_IDENT) {
         node->name = t->name;
         if (!consume('(')) {

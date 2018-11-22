@@ -54,6 +54,7 @@ int size_of(Type *ty);
 
 enum {
     TK_NUM = 256,
+    TK_STR,
     TK_IDENT,
     TK_INT,
     TK_CHAR,
@@ -70,6 +71,7 @@ enum {
 typedef struct {
     int ty;
     int val;
+    char *str;
     char *name;
     char *input;
 } Token;
@@ -78,9 +80,11 @@ Vector *tokenize(char *p);
 
 enum {
     ND_NUM = 256,
+    ND_STR,
     ND_IDENT,
     ND_VARDEF,
     ND_LVAR,
+    ND_GVAR,
     ND_IF,
     ND_FOR,
     ND_ADDR,
@@ -108,6 +112,7 @@ typedef struct Node {
     struct Node *lhs;
     struct Node *rhs;
     int val;
+    char *str;
     struct Node *expr;
     Vector *stmts;
     char *name;
@@ -118,6 +123,7 @@ typedef struct Node {
     struct Node *inc;
     struct Node *body;
     int stacksize;
+    Vector *strings;
     int offset;
     Vector *args;
 } Node;
@@ -138,6 +144,7 @@ enum {
     IR_RETURN,
     IR_CALL,
     IR_LABEL,
+    IR_LABEL_ADDR,
     IR_LT,
     IR_JMP,
     IR_UNLESS,
@@ -169,6 +176,7 @@ enum {
     IR_TY_IMM,
     IR_TY_JMP,
     IR_TY_LABEL,
+    IR_TY_LABEL_ADDR,
     IR_TY_REG_REG,
     IR_TY_REG_IMM,
     IR_TY_IMM_IMM,
@@ -184,6 +192,7 @@ typedef struct {
 typedef struct {
     char *name;
     int stacksize;
+    Vector *strings;
     Vector *ir;
 } Function;
 
