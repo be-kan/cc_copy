@@ -15,6 +15,7 @@ static struct {
         {"char", TK_CHAR},
         {"do", TK_DO},
         {"else", TK_ELSE},
+        {"extern", TK_EXTERN},
         {"for", TK_FOR},
         {"if", TK_IF},
         {"int", TK_INT},
