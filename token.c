@@ -21,6 +21,8 @@ static struct {
         {"sizeof", TK_SIZEOF},
         {"&&", TK_LOGAND},
         {"||", TK_LOGOR},
+        {"==", TK_EQ},
+        {"!=", TK_NE},
         {NULL, 0},
 };
 

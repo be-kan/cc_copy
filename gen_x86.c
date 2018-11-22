@@ -24,6 +24,12 @@ static char *escape(char *s, int len) {
     return buf;
 }
 
+void emit_cmp(IR *ir, char *insn) {
+    printf("  cmp %s, %s\n", regs[ir->lhs], regs[ir->rhs]);
+    printf("  %s %s\n", insn, regs8[ir->lhs]);
+    printf("  movzx %s, %s\n", regs[ir->lhs], regs8[ir->lhs]); // movzb -> movzx
+}
+
 void gen(Function *fn) {
     char *ret = format(".Lend%d", label++);
 
@@ -75,10 +81,14 @@ void gen(Function *fn) {
             case IR_LABEL_ADDR:
                 printf("  lea %s, %s[rip]\n", regs[ir->lhs], ir->name); // add [rip]
                 break;
+            case IR_EQ:
+                emit_cmp(ir, "sete");
+                break;
+            case IR_NE:
+                emit_cmp(ir, "setne");
+                break;
             case IR_LT:
-                printf("  cmp %s, %s\n", regs[ir->lhs], regs[ir->rhs]);
-                printf("  setl %s\n", regs8[ir->lhs]);
-                printf("  movzx %s, %s\n", regs[ir->lhs], regs8[ir->lhs]); // movzb -> movzx
+                emit_cmp(ir, "setl");
                 break;
             case IR_JMP:
                 printf("  jmp .L%d\n", ir->lhs);

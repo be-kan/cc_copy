@@ -124,4 +124,9 @@ try 5 'int x; int _main() { x = 5; return x; }'
 try 20 'int x[5]; int _main() { return sizeof(x); }'
 try 15 'int x[5]; int _main() { x[0] = 5; x[4] = 10; return x[0] + x[4]; }'
 
+try 0 'int _main() { return 4 == 5; }'
+try 1 'int _main() { return 5 == 5; }'
+try 1 'int _main() { return 4 != 5; }'
+try 0 'int _main() { return 5 != 5; }'
+
 echo OK
