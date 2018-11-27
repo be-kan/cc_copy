@@ -101,6 +101,15 @@ int main() {
         }
         return i;
     }));
+    EXPECT(45, ({
+        int i=0;
+        int j=0;
+        while (i<10) {
+            j=j+i;
+            i=i+1;
+        }
+        return j;
+    }));
     EXPECT(3, ({
         int ary[2];
         *ary = 1;

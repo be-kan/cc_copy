@@ -108,6 +108,7 @@ enum {
     ND_COMP_STMT,
     ND_EXPR_STMT,
     ND_STMT_EXPR,
+    ND_NULL,
 };
 
 enum {
@@ -124,7 +125,6 @@ typedef struct Node {
     struct Node *rhs;
     int val;
     struct Node *expr;
-    struct Node *stmt;
     Vector *stmts;
     char *name;
     bool is_extern;
