@@ -10,9 +10,9 @@ static char *escape(char *s, int len) {
     char *buf = malloc(len * 4);
     char *p = buf;
     for (int i = 0; i < len; i++) {
-        if (s[i] == '\\') {
+        if (s[i] == '\\' || s[i] == '"') {
             *p++ = '\\';
-            *p++ = '\\';
+            *p++ = s[i];
         } else if (isgraph(s[i]) || s[i] == ' ') {
             *p++ = s[i];
         } else {
@@ -27,7 +27,7 @@ static char *escape(char *s, int len) {
 void emit_cmp(IR *ir, char *insn) {
     printf("  cmp %s, %s\n", regs[ir->lhs], regs[ir->rhs]);
     printf("  %s %s\n", insn, regs8[ir->lhs]);
-    printf("  movzx %s, %s\n", regs[ir->lhs], regs8[ir->lhs]); // movzb -> movzx
+    printf("  movzb %s, %s\n", regs[ir->lhs], regs8[ir->lhs]);
 }
 
 void gen(Function *fn) {
@@ -103,7 +103,7 @@ void gen(Function *fn) {
                 break;
             case IR_LOAD8:
                 printf("  mov %s, [%s]\n", regs8[ir->lhs], regs[ir->rhs]);
-                printf("  movzx %s, %s\n", regs[ir->lhs], regs8[ir->lhs]); //movzb -> movzx
+                printf("  movzb %s, %s\n", regs[ir->lhs], regs8[ir->lhs]);
                 break;
             case IR_LOAD32:
                 printf("  mov %s, [%s]\n", regs32[ir->lhs], regs[ir->rhs]);
@@ -113,7 +113,7 @@ void gen(Function *fn) {
                 break;
             case IR_STORE8:
                 printf("  mov [%s], %s\n", regs[ir->lhs], regs8[ir->rhs]);
-                break;  // no need?
+                //break;  // no need?
             case IR_STORE32:
                 printf("  mov [%s], %s\n", regs[ir->lhs], regs32[ir->rhs]);
                 break;

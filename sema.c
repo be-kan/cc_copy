@@ -189,11 +189,13 @@ static Node *walk(Env *env, Node *node, bool decay) {
             }
             node->body = walk(env, node->body, true);
             return node;
-        case ND_COMP_STMT:
+        case ND_COMP_STMT: {
+            Env *newenv = new_env(env);
             for (int i = 0; i < node->stmts->len; i++) {
-                node->stmts->data[i] = walk(env, node->stmts->data[i], true);
+                node->stmts->data[i] = walk(newenv, node->stmts->data[i], true);
             }
             return node;
+        }
         case ND_EXPR_STMT:
             node->expr = walk(env, node->expr, true);
             return node;
