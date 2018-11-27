@@ -160,15 +160,15 @@ int main() {
         p[0] = 42;
         return x;
     }));
-    EXPECT(97, ({
+    EXPECT('a', ({
         char *p = "abc";
         return p[0];
     }));
-    EXPECT(98, ({
+    EXPECT('b', ({
         char *p = "abc";
         return p[1];
     }));
-    EXPECT(99, ({
+    EXPECT('c', ({
         char *p = "abc";
         return p[2];
     }));

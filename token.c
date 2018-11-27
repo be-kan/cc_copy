@@ -29,6 +29,41 @@ static struct {
         {NULL, 0},
 };
 
+static char escaped[256] = {
+        ['a'] = '\a',
+        ['b'] = '\b',
+        ['f'] = '\f',
+        ['n'] = '\n',
+        ['r'] = '\r',
+        ['t'] = '\t',
+        ['v'] = '\v',
+        ['e'] = '\033',
+        ['E'] = '\033',
+};
+
+static int read_char(int *result, char *p) {
+    char *start = p;
+    if (!*p) {
+        error("premature end of input");
+    }
+    if (*p != '\\') {
+        *result = *p++;
+    } else {
+        p++;
+        if (!*p) {
+            error("premature end of input");
+        }
+        int esc = escaped[(unsigned)*p];
+        *result = esc ? esc : *p;
+        p++;
+    }
+    if (*p != '\'') {
+        error("unclosed character literal");
+    }
+    p++;
+    return p - start;
+}
+
 static int read_string(StringBuilder *sb, char *p) {
     char *start = p;
     while (*p != '"') {
@@ -40,25 +75,11 @@ static int read_string(StringBuilder *sb, char *p) {
             continue;
         }
         p++;
-        if (*p == 'a') {
-            sb_add(sb, '\a');
-        } else if (*p == 'b') {
-            sb_add(sb, '\b');
-        } else if (*p == 'f') {
-            sb_add(sb, '\f');
-        } else if (*p == 'n') {
-            sb_add(sb, '\n');
-        } else if (*p == 'r') {
-            sb_add(sb, '\r');
-        } else if (*p == 't') {
-            sb_add(sb, '\t');
-        } else if (*p == 'v') {
-            sb_add(sb, '\v');
-        } else if (*p == '\0') {
+        if (*p == '\0') {
             error("PREMATURE end of input");
-        } else {
-            sb_add(sb, *p);
         }
+        int esc = escaped[(unsigned)*p];
+        sb_add(sb, esc ? esc : *p);
         p++;
     }
     return p - start + 1;
@@ -71,6 +92,13 @@ loop:
     while (*p) {
         if (isspace(*p)) {
             p++;
+            continue;
+        }
+
+        if (*p == '\'') {
+            Token *t = add_token(v, TK_NUM, p);
+            p++;
+            p += read_char(&t->val, p);
             continue;
         }
 
