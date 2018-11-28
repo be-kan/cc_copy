@@ -45,15 +45,18 @@ char *sb_get(StringBuilder *sb);
 
 typedef struct Type {
     int ty;
+    int size;
+    int align;
     struct Type *ptr_to;
     struct Type *ary_of;
     int len;
+    Vector *members;
+    int offset;
 } Type;
 
 Type *ptr_to(Type *base);
 Type *ary_of(Type *base, int len);
-int size_of(Type *ty);
-int align_of(Type *ty);
+Type *struct_of(Vector *members);
 int roundup(int x, int align);
 
 enum {
@@ -63,6 +66,7 @@ enum {
     TK_EXTERN,
     TK_INT,
     TK_CHAR,
+    TK_STRUCT,
     TK_IF,
     TK_ELSE,
     TK_FOR,
@@ -93,6 +97,7 @@ enum {
     ND_NUM = 256,
     ND_STR,
     ND_IDENT,
+    ND_STRUCT,
     ND_VARDEF,
     ND_LVAR,
     ND_GVAR,
@@ -121,6 +126,7 @@ enum {
     CHAR,
     PTR,
     ARY,
+    STRUCT,
 };
 
 typedef struct Node {
@@ -135,6 +141,7 @@ typedef struct Node {
     bool is_extern;
     char *data;
     int len;
+    Vector *members;
     struct Node *cond;
     struct Node *then;
     struct Node *els;
