@@ -59,12 +59,12 @@ static int gen_lval(Node *node) {
     return r;
 }
 
-static int gen_binop(int ty, Node *lhs, Node *rhs) {
-    int r1 = gen_expr(lhs);
-    int r2 = gen_expr(rhs);
-    add(ty, r1, r2);
-    kill(r2);
-    return r1;
+static int gen_binop(int ty, Node *node) {
+    int lhs = gen_expr(node->lhs);
+    int rhs = gen_expr(node->rhs);
+    add(ty, lhs, rhs);
+    kill(rhs);
+    return lhs;
 }
 
 static void gen_stmt(Node *node);
@@ -76,20 +76,10 @@ static int gen_expr(Node *node) {
             add(IR_IMM, r, node->val);
             return r;
         }
-        case ND_EQ: {
-            int lhs = gen_expr(node->lhs);
-            int rhs = gen_expr(node->rhs);
-            add(IR_EQ, lhs, rhs);
-            kill(rhs);
-            return lhs;
-        }
-        case ND_NE: {
-            int lhs = gen_expr(node->lhs);
-            int rhs = gen_expr(node->rhs);
-            add(IR_NE, lhs, rhs);
-            kill(rhs);
-            return lhs;
-        }
+        case ND_EQ:
+            return gen_binop(IR_EQ, node);
+        case ND_NE:
+            return gen_binop(IR_NE, node);
         case ND_LOGAND: {
             int x = nlabel++;
             int r1 = gen_expr(node->lhs);
@@ -170,7 +160,7 @@ static int gen_expr(Node *node) {
         case '-': {
             int insn = (node->op == '+') ? IR_ADD : IR_SUB;
             if (node->lhs->ty->ty != PTR) {
-                return gen_binop(insn, node->lhs, node->rhs);
+                return gen_binop(insn, node);
             }
             int rhs = gen_expr(node->rhs);
             int r = nreg++;
@@ -183,11 +173,11 @@ static int gen_expr(Node *node) {
             return lhs;
         }
         case '*':
-            return gen_binop(IR_MUL, node->lhs, node->rhs);
+            return gen_binop(IR_MUL, node);
         case '/':
-            return gen_binop(IR_DIV, node->lhs, node->rhs);
+            return gen_binop(IR_DIV, node);
         case '<':
-            return gen_binop(IR_LT, node->lhs, node->rhs);
+            return gen_binop(IR_LT, node);
         default:
             assert(0 && "unknown AST type");
     }
