@@ -12,6 +12,7 @@ static struct {
     char *name;
     int ty;
 } symbols[] = {
+        {"_Alignof", TK_ALIGNOF},
         {"char", TK_CHAR},
         {"do", TK_DO},
         {"else", TK_ELSE},

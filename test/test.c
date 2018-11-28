@@ -87,8 +87,7 @@ int main() {
         do {
             y = y + x;
             x = x + 1;
-        }
-        while (x < 10);
+        } while (x < 10);
         return y;
     }));
     EXPECT(60, ({
@@ -108,11 +107,11 @@ int main() {
         return i;
     }));
     EXPECT(45, ({
-        int i=0;
-        int j=0;
-        while (i<10) {
-            j=j+i;
-            i=i+1;
+        int i = 0;
+        int j = 0;
+        while (i < 10) {
+            j = j + i;
+            i = i + 1;
         }
         return j;
     }));
@@ -155,6 +154,26 @@ int main() {
     EXPECT(16, ({
         int x[4];
         return sizeof x;
+    }));
+    EXPECT(1, ({
+        char x;
+        return _Alignof x;
+    }));
+    EXPECT(4, ({
+        int x;
+        return _Alignof(x);
+    }));
+    EXPECT(8, ({
+        int *x;
+        return _Alignof x;
+    }));
+    EXPECT(4, ({
+        int x[4];
+        return _Alignof x;
+    }));
+    EXPECT(8, ({
+        int *x[4];
+        return _Alignof x;
     }));
     EXPECT(5, ({
         char x = 5;
@@ -200,7 +219,9 @@ int main() {
     }));
     EXPECT(5, global_arr[0]);
     EXPECT(8, ({ return 3 + ({ return 5; }); }));
-    EXPECT(1, ({; return 1;}));
+    EXPECT(1, ({ ;
+        return 1;
+    }));
 
     printf("OK\n");
     return 0;

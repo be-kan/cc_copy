@@ -73,6 +73,7 @@ enum {
     TK_LOGOR,
     TK_RETURN,
     TK_SIZEOF,
+    TK_ALIGNOF,
     TK_EOF,
 };
 
@@ -105,6 +106,7 @@ enum {
     ND_LOGOR,
     ND_RETURN,
     ND_SIZEOF,
+    ND_ALIGNOF,
     ND_CALL,
     ND_FUNC,
     ND_COMP_STMT,
