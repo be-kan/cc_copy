@@ -161,6 +161,15 @@ typedef struct {
 
 Vector *sema(Vector *nodes);
 
+typedef struct {
+    char *name;
+    int ty;
+} IRInfo;
+
+extern IRInfo irinfo[];
+
+void dump_ir(Vector *irv);
+
 enum {
     IR_ADD,
     IR_SUB,
@@ -217,20 +226,12 @@ enum {
 
 typedef struct {
     char *name;
-    int ty;
-} IRInfo;
-
-typedef struct {
-    char *name;
     int stacksize;
     Vector *globals;
     Vector *ir;
 } Function;
 
-extern IRInfo irinfo[];
-
 Vector *gen_ir(Vector *fns);
-void dump_ir(Vector *irv);
 
 extern char *regs[];
 extern char *regs8[];
