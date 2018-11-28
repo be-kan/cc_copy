@@ -106,6 +106,7 @@ enum {
     ND_DO_WHILE,
     ND_ADDR,
     ND_DEREF,
+    ND_DOT,
     ND_EQ,
     ND_NE,
     ND_LOGAND,
@@ -142,6 +143,7 @@ typedef struct Node {
     char *data;
     int len;
     Vector *members;
+    char *member;
     struct Node *cond;
     struct Node *then;
     struct Node *els;
