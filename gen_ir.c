@@ -213,9 +213,9 @@ static int gen_expr(Node *node) {
             return gen_lval(node->expr);
         case ND_DEREF: {
             int r = gen_expr(node->expr);
-            if (node->expr->ty->ptr_of->ty == CHAR) {
+            if (node->expr->ty->ptr_to->ty == CHAR) {
                 add(IR_LOAD8, r, r);
-            } else if (node->expr->ty->ptr_of->ty == INT) {
+            } else if (node->expr->ty->ptr_to->ty == INT) {
                 add(IR_LOAD32, r, r);
             } else {
                 add(IR_LOAD64, r, r);
@@ -255,7 +255,7 @@ static int gen_expr(Node *node) {
             }
             int rhs = gen_expr(node->rhs);
             int r = nreg++;
-            add(IR_IMM, r, size_of(node->lhs->ty->ptr_of));
+            add(IR_IMM, r, size_of(node->lhs->ty->ptr_to));
             add(IR_MUL, rhs, r);
             kill(r);
             int lhs = gen_expr(node->lhs);

@@ -44,12 +44,12 @@ char *sb_get(StringBuilder *sb);
 
 typedef struct Type {
     int ty;
-    struct Type *ptr_of;
+    struct Type *ptr_to;
     struct Type *ary_of;
     int len;
 } Type;
 
-Type *ptr_of(Type *base);
+Type *ptr_to(Type *base);
 Type *ary_of(Type *base, int len);
 int size_of(Type *ty);
 
