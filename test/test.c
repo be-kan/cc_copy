@@ -260,6 +260,19 @@ int main() {
         x.b = 5;
         return x.a + x.b;
     }));
+    EXPECT(8, ({
+        struct {
+            char a;
+            int b;
+        } x;
+        struct {
+            char a;
+            int b;
+        } *p = &x;
+        x.a = 3;
+        x.b = 5;
+        return p->a + p->b;
+    }));
 
     printf("OK\n");
     return 0;

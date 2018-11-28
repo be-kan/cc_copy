@@ -63,6 +63,7 @@ enum {
     TK_NUM = 256,
     TK_STR,
     TK_IDENT,
+    TK_ARROW,
     TK_EXTERN,
     TK_INT,
     TK_CHAR,
@@ -142,8 +143,6 @@ typedef struct Node {
     bool is_extern;
     char *data;
     int len;
-    Vector *members;
-    char *member;
     struct Node *cond;
     struct Node *then;
     struct Node *els;
