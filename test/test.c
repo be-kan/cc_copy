@@ -81,6 +81,12 @@ int main() {
     EXPECT(1, 5 == 5);
     EXPECT(1, 4 != 5);
     EXPECT(0, 5 != 5);
+    EXPECT(1, 4 <= 5);
+    EXPECT(1, 5 <= 5);
+    EXPECT(0, 6 <= 5);
+    EXPECT(0, 4 >= 5);
+    EXPECT(1, 5 >= 5);
+    EXPECT(1, 6 >= 5);
     EXPECT(0, !1);
     EXPECT(1, !0);
     EXPECT(5, 0 ? 3 : 5);
