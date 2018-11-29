@@ -68,6 +68,7 @@ enum {
     TK_TYPEDEF,
     TK_INT,
     TK_CHAR,
+    TK_VOID,
     TK_STRUCT,
     TK_IF,
     TK_ELSE,
@@ -127,6 +128,7 @@ enum {
 enum {
     INT,
     CHAR,
+    VOID,
     PTR,
     ARY,
     STRUCT,

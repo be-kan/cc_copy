@@ -190,6 +190,9 @@ static Node *walk(Node *node, Env *env, bool decay) {
             if (node->expr->ty->ty != PTR){
                 error("operand must be a pointer");
             }
+            if (node->expr->ty->ptr_to->ty == VOID) {
+                error("cannot dereference void pointer");
+            }
             node->ty = node->expr->ty->ptr_to;
             return node;
         case ND_RETURN:

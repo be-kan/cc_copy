@@ -37,6 +37,7 @@ static Type *new_prim_ty(int ty, int size) {
     return ret;
 }
 
+static Type *void_ty() { return new_prim_ty(VOID, 0); }
 static Type *char_ty() { return new_prim_ty(CHAR, 1); }
 static Type *int_ty() { return new_prim_ty(INT, 4); }
 
@@ -54,30 +55,24 @@ static bool is_typename() {
     if (t->ty == TK_IDENT) {
         return map_exists(env->typedefs, t->name);
     }
-    return t->ty == TK_INT || t->ty == TK_CHAR || t->ty == TK_STRUCT;
+    return t->ty == TK_INT || t->ty == TK_CHAR || t->ty == TK_VOID || t->ty == TK_STRUCT;
 }
 
 static Node *decl();
 
 static Type *read_type() {
-    Token *t = tokens->data[pos];
+    Token *t = tokens->data[pos++];
     if (t->ty == TK_IDENT) {
         Type *ty = map_get(env->typedefs, t->name);
-        if (ty) {
-            pos++;
+        if (!ty) {
+            pos--;
         }
         return ty;
     }
-    if (t->ty == TK_INT) {
-        pos++;
-        return int_ty();
-    }
-    if (t->ty == TK_CHAR) {
-        pos++;
-        return char_ty();
-    }
+    if (t->ty == TK_INT) return int_ty();
+    if (t->ty == TK_CHAR) return char_ty();
+    if (t->ty == TK_VOID) return void_ty();
     if (t->ty == TK_STRUCT) {
-        pos++;
         char *tag = NULL;
         Token *t = tokens->data[pos];
         if (t->ty == TK_IDENT) {
@@ -104,6 +99,7 @@ static Type *read_type() {
         }
         return struct_of(members);
     }
+    pos--;
     return NULL;
 }
 
@@ -363,6 +359,9 @@ static Node *decl() {
     node->name = ident();
 
     node->ty = read_array(node->ty);
+    if (node->ty->ty == VOID) {
+        error("void variable: %s", node->name);
+    }
 
     if (consume('=')) {
         node->init = assign();
