@@ -186,6 +186,24 @@ static int gen_expr(Node *node) {
             return gen_binop(IR_DIV, node);
         case '<':
             return gen_binop(IR_LT, node);
+        case '?': {
+            int x = nlabel++;
+            int y = nlabel++;
+            int r = gen_expr(node->cond);
+
+            add(IR_UNLESS, r, x);
+            int r2 = gen_expr(node->then);
+            add(IR_MOV, r, r2);
+            kill(r2);
+            add(IR_JMP, y, -1);
+
+            label(x);
+            int r3 = gen_expr(node->els);
+            add(IR_MOV, r, r3);
+            kill(r3); // fix r2 -> r3
+            label(y);
+            return r;
+        }
         case '!': {
             int lhs = gen_expr(node->expr);
             int rhs = nreg++;
