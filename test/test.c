@@ -85,6 +85,9 @@ int main() {
     EXPECT(1, !0);
     EXPECT(5, 0 ? 3 : 5);
     EXPECT(3, 1 ? 3 : 5);
+    EXPECT(3, (1, 2, 3));
+    EXPECT(11, 9 | 2);
+    EXPECT(11, 9 | 3);
     EXPECT(45, ({
         int x = 0;
         int y = 0;

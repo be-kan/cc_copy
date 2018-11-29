@@ -20,6 +20,7 @@ static Env *new_env(Env *next) {
 }
 
 static Node *assign();
+static Node *expr();
 
 static void expect(int ty) {
     Token *t = tokens->data[pos];
@@ -139,7 +140,7 @@ static Node *primary() {
             expect(')');
             return node;
         }
-        Node *node = assign();
+        Node *node = expr();
         expect(')');
         return node;
     }
@@ -294,15 +295,27 @@ static Node *equality() {
     }
 }
 
-static Node *logand() {
+static Node *bit_or() {
     Node *lhs = equality();
+    for (;;) {
+        Token *t = tokens->data[pos];
+        if (t->ty != '|') {
+            return lhs;
+        }
+        pos++;
+        lhs = new_binop('|', lhs, equality());
+    }
+}
+
+static Node *logand() {
+    Node *lhs = bit_or();
     for (;;) {
         Token *t = tokens->data[pos];
         if (t->ty != TK_LOGAND) {
             return lhs;
         }
         pos++;
-        lhs = new_binop(ND_LOGAND, lhs, equality());
+        lhs = new_binop(ND_LOGAND, lhs, bit_or());
     }
 }
 
@@ -326,18 +339,26 @@ static Node *conditional() {
     Node *node = calloc(1, sizeof(Node));
     node->op = '?';
     node->cond = cond;
-    node->then = assign();
+    node->then = expr();
     expect(':');
-    node->els = assign();
+    node->els = conditional();
     return node;
 }
 
 static Node *assign() {
     Node *lhs = conditional();
-    if (consume('=')) {
-        return new_binop('=', lhs, conditional());
+    if (!consume('=')) {
+        return lhs;
     }
-    return lhs;
+    return new_binop('=', lhs, conditional());
+}
+
+static Node *expr() {
+    Node *lhs = assign();
+    if (!consume(',')) {
+        return lhs;
+    }
+    return new_binop(',', lhs, expr());
 }
 
 static Type *type() {
@@ -355,7 +376,7 @@ static Type *type() {
 static Type *read_array(Type *ty) {
     Vector *v = new_vec();
     while (consume('[')) {
-        Node *len = primary();
+        Node *len = expr();
         if (len->op != ND_NUM) {
             error("number expected");
         }
@@ -396,7 +417,7 @@ static Node *param() {
 }
 
 static Node *expr_stmt() {
-    Node *node = new_expr(ND_EXPR_STMT, assign());
+    Node *node = new_expr(ND_EXPR_STMT, expr());
     expect(';');
     return node;
 }
@@ -437,9 +458,9 @@ static Node *stmt() {
             } else {
                 node->init = expr_stmt();
             }
-            node->cond = assign();
+            node->cond = expr();
             expect(';');
-            node->inc = new_expr(ND_EXPR_STMT, assign());
+            node->inc = new_expr(ND_EXPR_STMT, expr());
             expect(')');
             node->body = stmt();
             return node;
@@ -449,7 +470,7 @@ static Node *stmt() {
             node->init = &null_stmt;
             node->inc = &null_stmt;
             expect('(');
-            node->cond = assign();
+            node->cond = expr();
             expect(')');
             node->body = stmt();
             return node;
@@ -466,7 +487,7 @@ static Node *stmt() {
         case TK_RETURN:
             pos++;
             node->op = ND_RETURN;
-            node->expr = assign();
+            node->expr = expr();
             expect(';');
             return node;
         case '{':
