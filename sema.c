@@ -166,7 +166,7 @@ static Node *walk(Node *node, Env *env, bool decay) {
                 }
                 node->ty = m->ty;
                 node->offset = m->ty->offset;
-                return node;
+                return maybe_decay(node, decay);
             }
             error("member missing: %s", node->name);
         case '*':

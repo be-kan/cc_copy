@@ -283,6 +283,26 @@ int main() {
         x.b = 5;
         return p->a + p->b;
     }));
+    EXPECT(48, ({
+        struct {
+            struct {
+                int b;
+                int c[5];
+            } a[2];
+        } x;
+        return sizeof(x);
+    }));
+    EXPECT(8, ({
+        struct {
+            struct {
+                int b;
+                int c[5];
+            } a[2];
+        } x;
+        x.a[0].b = 3;
+        x.a[0].c[1] = 5;
+        return x.a[0].b + x.a[0].c[1];
+    }));
 
     printf("OK\n");
     return 0;
