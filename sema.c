@@ -179,6 +179,7 @@ static Node *walk(Node *node, Env *env, bool decay) {
         case '/':
         case '<':
         case '|':
+        case '^':
         case ND_EQ:
         case ND_NE:
         case ND_LOGAND:
