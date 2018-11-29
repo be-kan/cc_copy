@@ -65,6 +65,7 @@ enum {
     TK_IDENT,
     TK_ARROW,
     TK_EXTERN,
+    TK_TYPEDEF,
     TK_INT,
     TK_CHAR,
     TK_STRUCT,
