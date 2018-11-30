@@ -193,6 +193,7 @@ int main() {
         int x[4];
         return sizeof x;
     }));
+    EXPECT(4, sizeof("abc"));
     EXPECT(1, ({
         char x;
         return _Alignof x;
