@@ -102,6 +102,8 @@ char *sb_get(StringBuilder *sb) {
     return sb->data;
 }
 
+int roundup(int x, int align) { return (x + align - 1) & ~(align - 1); }
+
 Type *ptr_to(Type *base) {
     Type *ty = calloc(1, sizeof(Type));
     ty->ty = PTR;
@@ -119,8 +121,4 @@ Type *ary_of(Type *base, int len) {
     ty->ary_of = base;
     ty->len = len;
     return ty;
-}
-
-int roundup(int x, int align) {
-    return  (x + align - 1) & ~(align - 1);
 }
