@@ -491,22 +491,16 @@ static Node *expr_stmt() {
 
 static Node *stmt() {
     Node *node = calloc(1, sizeof(Node));
-    Token *t = tokens->data[pos];
+    Token *t = tokens->data[pos++];
 
     switch (t->ty) {
         case TK_TYPEDEF: {
-            pos++;
             Node *node = decl();
             assert(node->name);
             map_put(env->typedefs, node->name, node->ty);
             return &null_stmt;
         }
-        case TK_INT:
-        case TK_CHAR:
-        case TK_STRUCT:
-            return decl();
         case TK_IF:
-            pos++;
             node->op = ND_IF;
             expect('(');
             node->cond = assign();
@@ -517,7 +511,6 @@ static Node *stmt() {
             }
             return node;
         case TK_FOR:
-            pos++;
             node->op = ND_FOR;
             expect('(');
             if (is_typename()) {
@@ -532,7 +525,6 @@ static Node *stmt() {
             node->body = stmt();
             return node;
         case TK_WHILE:
-            pos++;
             node->op = ND_FOR;
             node->init = &null_stmt;
             node->inc = &null_stmt;
@@ -542,7 +534,6 @@ static Node *stmt() {
             node->body = stmt();
             return node;
         case TK_DO:
-            pos++;
             node->op = ND_DO_WHILE;
             node->body = stmt();
             expect(TK_WHILE);
@@ -552,13 +543,11 @@ static Node *stmt() {
             expect(';');
             return node;
         case TK_RETURN:
-            pos++;
             node->op = ND_RETURN;
             node->expr = expr();
             expect(';');
             return node;
         case '{':
-            pos++;
             node->op = ND_COMP_STMT;
             node->stmts = new_vec();
             while (!consume('}')) {
@@ -566,9 +555,9 @@ static Node *stmt() {
             }
             return node;
         case ';':
-            pos++;
             return &null_stmt;
         default:
+            pos--;
             if (is_typename()) {
                 return decl();
             }
