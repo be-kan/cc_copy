@@ -149,7 +149,7 @@ void gen(Function *fn) {
                 break;
             case IR_STORE8:
                 emit("mov [%s], %s", regs[lhs], regs8[rhs]);
-                //break;  // no need?
+                break;
             case IR_STORE32:
                 emit("mov [%s], %s", regs[lhs], regs32[rhs]);
                 break;
@@ -183,6 +183,10 @@ void gen(Function *fn) {
                 emit("mov %s, rax", regs[lhs]);
                 break;
             case IR_MUL_IMM:
+                if (rhs < 256 && __builtin_popcount(rhs) == 1) {
+                    emit("shl %s, %d", regs[lhs], __builtin_ctz(rhs));
+                    break;
+                }
                 emit("mov rax, %d", rhs);
                 emit("mul %s", regs[lhs]);
                 emit("mov %s, rax", regs[lhs]);
