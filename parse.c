@@ -242,6 +242,8 @@ static Node *mul() {
             lhs = new_binop('*', lhs, unary());
         } else if (consume('/')) {
             lhs = new_binop('/', lhs, unary());
+        } else if (consume('%')) {
+            lhs = new_binop('%', lhs, unary());
         } else {
             return lhs;
         }
