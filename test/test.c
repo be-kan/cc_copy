@@ -91,6 +91,7 @@ int main() {
     EXPECT(4, 16 >> 2);
     EXPECT(4, 19 % 5);
     EXPECT(0, 9 % 3);
+    EXPECT(0-3, -3);
     EXPECT(0, !1);
     EXPECT(1, !0);
     EXPECT(5, 0 ? 3 : 5);

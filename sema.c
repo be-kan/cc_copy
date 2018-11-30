@@ -198,6 +198,7 @@ static Node *walk(Node *node, Env *env, bool decay) {
             node->rhs = walk(node->rhs, env, true);
             node->ty = node->rhs->ty;
             return node;
+        case ND_NEG:
         case '!':
             node->expr = walk(node->expr, env, true);
             node->ty = node->expr->ty;
@@ -218,6 +219,7 @@ static Node *walk(Node *node, Env *env, bool decay) {
             node->ty = node->expr->ty->ptr_to;
             return node;
         case ND_RETURN:
+        case ND_EXPR_STMT:
             node->expr = walk(node->expr, env, true);
             return node;
         case ND_SIZEOF: {
@@ -247,9 +249,6 @@ static Node *walk(Node *node, Env *env, bool decay) {
             }
             return node;
         }
-        case ND_EXPR_STMT:
-            node->expr = walk(node->expr, env, true);
-            return node;
         case ND_STMT_EXPR:
             node->body = walk(node->body, env, true);
             node->ty = &int_ty;
