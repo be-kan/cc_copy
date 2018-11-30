@@ -516,13 +516,19 @@ static Node *stmt() {
             expect('(');
             if (is_typename()) {
                 node->init = decl();
+            } else if (consume(';')) {
+                node->init = &null_stmt;
             } else {
                 node->init = expr_stmt();
             }
-            node->cond = expr();
-            expect(';');
-            node->inc = new_expr(ND_EXPR_STMT, expr());
-            expect(')');
+            if (!consume(';')) {
+                node->cond = expr();
+                expect(';');
+            }
+            if (!consume(')')) {
+                node->inc = new_expr(ND_EXPR_STMT, expr());
+                expect(')');
+            }
             node->body = stmt();
             return node;
         case TK_WHILE:
