@@ -56,7 +56,6 @@ typedef struct Type {
 
 Type *ptr_to(Type *base);
 Type *ary_of(Type *base, int len);
-Type *struct_of(Vector *members);
 int roundup(int x, int align);
 
 enum {
@@ -174,7 +173,6 @@ typedef struct Node {
 } Node;
 
 Vector *parse(Vector *tokens);
-int size_of(Type *ty);
 
 typedef struct {
     Type *ty;

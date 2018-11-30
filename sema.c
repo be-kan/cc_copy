@@ -159,6 +159,9 @@ static Node *walk(Node *node, Env *env, bool decay) {
             }
 
             Type *ty = node->expr->ty;
+            if (!ty->members) {
+                error("incomplete type");
+            }
             for (int i = 0; i < ty->members->len; i++) {
                 Node *m = ty->members->data[i];
                 if (strcmp(m->name, node->name)) {

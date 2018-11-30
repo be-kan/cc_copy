@@ -21,6 +21,7 @@ int add(int a, int b, int c, int d, int e, int f) { return a+b+c+d+e+f; }
 int var1;
 int var2[5];
 extern int global_arr[1];
+typedef int myint;
 
 // single-line comment test
 
@@ -91,13 +92,25 @@ int main() {
     EXPECT(4, 16 >> 2);
     EXPECT(4, 19 % 5);
     EXPECT(0, 9 % 3);
-    EXPECT(0-3, -3);
+    EXPECT(0 - 3, -3);
     EXPECT(0, !1);
     EXPECT(1, !0);
-    EXPECT(3, ({ int i = 3; return i++; }));
-    EXPECT(4, ({ int i = 3; return ++i; }));
-    EXPECT(3, ({ int i = 3; return i--; }));
-    EXPECT(2, ({ int i = 3; return --i; }));
+    EXPECT(3, ({
+        int i = 3;
+        return i++;
+    }));
+    EXPECT(4, ({
+        int i = 3;
+        return ++i;
+    }));
+    EXPECT(3, ({
+        int i = 3;
+        return i--;
+    }));
+    EXPECT(2, ({
+        int i = 3;
+        return --i;
+    }));
     EXPECT(5, 0 ? 3 : 5);
     EXPECT(3, 1 ? 3 : 5);
     EXPECT(3, (1, 2, 3));
@@ -332,6 +345,14 @@ int main() {
         typedef int foo;
         foo x = 3;
         return x;
+    }));
+    EXPECT(4, ({
+        myint foo = 3;
+        return sizeof(foo);
+    }));
+    EXPECT(1, ({
+        typedef struct foo_ foo;
+        return 1;
     }));
 
     printf("OK\n");
