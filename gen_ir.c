@@ -64,11 +64,26 @@ static int gen_lval(Node *node) {
     return r;
 }
 
+static int gen_binop(int ty, Node *node) {
+    int lhs = gen_expr(node->lhs);
+    int rhs = gen_expr(node->rhs);
+    add(ty, lhs, rhs);
+    kill(rhs);
+    return lhs;
+}
+
+int get_inc_scale(Node *node) {
+    if (node->ty->ty == PTR) {
+        return node->ty->ptr_to->size;
+    }
+    return 1;
+}
+
 static int gen_pre_inc(Node *node, int num) {
     int addr = gen_lval(node->expr);
     int val = nreg++;
     add(load_insn(node), val, addr);
-    add(IR_ADD_IMM, val, num);
+    add(IR_ADD_IMM, val, num * get_inc_scale(node));
     add(store_insn(node), addr, val);
     kill(addr);
     return val;
@@ -76,16 +91,8 @@ static int gen_pre_inc(Node *node, int num) {
 
 static int gen_post_inc(Node *node, int num) {
     int val = gen_pre_inc(node, num);
-    add(IR_SUB_IMM, val, num);
+    add(IR_SUB_IMM, val, num * get_inc_scale(node));
     return val;
-}
-
-static int gen_binop(int ty, Node *node) {
-    int lhs = gen_expr(node->lhs);
-    int rhs = gen_expr(node->rhs);
-    add(ty, lhs, rhs);
-    kill(rhs);
-    return lhs;
 }
 
 static void gen_stmt(Node *node);

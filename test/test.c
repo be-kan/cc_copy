@@ -196,6 +196,20 @@ int main() {
         return p[0];
     }));
     EXPECT(1, ({
+        int ary[2];
+        ary[0] = 1;
+        ary[1] = 2;
+        int *p = ary;
+        return *p++;
+    }));
+    EXPECT(2, ({
+        int ary[2];
+        ary[0] = 1;
+        ary[1] = 2;
+        int *p = ary;
+        return *++p;
+    }));
+    EXPECT(1, ({
         char x;
         return sizeof x;
     }));
