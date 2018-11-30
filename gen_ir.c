@@ -258,100 +258,89 @@ static int gen_expr(Node *node) {
 }
 
 static void gen_stmt(Node *node) {
-    if (node->op == ND_NULL) {
-        return;
-    }
-    if (node->op == ND_VARDEF) {
-        if (!node->init) {
+    switch (node->op) {
+        case ND_NULL:
+            return;
+        case ND_VARDEF: {
+            if (!node->init) {
+                return;
+            }
+            int rhs = gen_expr(node->init);
+            int lhs = nreg++;
+            add(IR_BPREL, lhs, node->offset);
+            add(store_insn(node), lhs, rhs);
+            kill(lhs);
+            kill(rhs);
             return;
         }
-        int rhs = gen_expr(node->init);
-        int lhs = nreg++;
-        add(IR_BPREL, lhs, node->offset);
-        add(store_insn(node), lhs, rhs);
-        kill(lhs);
-        kill(rhs);
-        return;
-    }
-
-    if (node->op == ND_IF) {
-        if (node->els) {
+        case ND_IF: {
+            if (node->els) {
+                int x = nlabel++;
+                int y = nlabel++;
+                int r = gen_expr(node->cond);
+                add(IR_UNLESS, r, x);
+                kill(r);
+                gen_stmt(node->then);
+                add(IR_JMP, y, -1);
+                label(x);
+                gen_stmt(node->els);
+                label(y);
+                return;
+            }
             int x = nlabel++;
-            int y = nlabel++;
             int r = gen_expr(node->cond);
             add(IR_UNLESS, r, x);
             kill(r);
             gen_stmt(node->then);
-            add(IR_JMP, y, -1);
             label(x);
-            gen_stmt(node->els);
+            return;
+        }
+        case ND_FOR: {
+            int x = nlabel++;
+            int y = nlabel++;
+            gen_stmt(node->init);
+            label(x);
+            int r = gen_expr(node->cond);
+            add(IR_UNLESS, r, y);
+            kill(r);
+            gen_stmt(node->body);
+            gen_stmt(node->inc);
+            add(IR_JMP, x, -1);
             label(y);
             return;
         }
-
-        int x = nlabel++;
-        int r = gen_expr(node->cond);
-        add(IR_UNLESS, r, x);
-        kill(r);
-        gen_stmt(node->then);
-        label(x);
-        return;
-    }
-
-    if (node->op == ND_FOR) {
-        int x = nlabel++;
-        int y = nlabel++;
-
-        gen_stmt(node->init);
-        label(x);
-        int r = gen_expr(node->cond);
-        add(IR_UNLESS, r, y);
-        kill(r);
-        gen_stmt(node->body);
-        gen_stmt(node->inc);
-        add(IR_JMP, x, -1);
-        label(y);
-        return;
-    }
-
-    if (node->op == ND_DO_WHILE) {
-        int x = nlabel++;
-        label(x);
-        gen_stmt(node->body);
-        int r = gen_expr(node->cond);
-        add(IR_IF, r, x);
-        kill(r);
-        return;
-    }
-
-    if (node->op == ND_RETURN) {
-        int r = gen_expr(node->expr);
-
-        if (return_label) {
-            add(IR_MOV, return_reg, r);
+        case ND_DO_WHILE: {
+            int x = nlabel++;
+            label(x);
+            gen_stmt(node->body);
+            int r = gen_expr(node->cond);
+            add(IR_IF, r, x);
             kill(r);
-            add(IR_JMP, return_label, -1);
             return;
         }
-
-        add(IR_RETURN, r, -1);
-        kill(r);
-        return;
-    }
-
-    if (node->op == ND_EXPR_STMT) {
-        kill(gen_expr(node->expr));
-        return;
-    }
-
-    if (node->op == ND_COMP_STMT) {
-        for (int i = 0; i < node->stmts->len; i++) {
-            gen_stmt(node->stmts->data[i]);
+        case ND_RETURN: {
+            int r = gen_expr(node->expr);
+            if (return_label) {
+                add(IR_MOV, return_reg, r);
+                kill(r);
+                add(IR_JMP, return_label, -1);
+                return;
+            }
+            add(IR_RETURN, r, -1);
+            kill(r);
+            return;
         }
-        return;
+        case ND_EXPR_STMT:
+            kill(gen_expr(node->expr));
+            return;
+        case ND_COMP_STMT:
+            for (int i = 0; i < node->stmts->len; i++) {
+                gen_stmt(node->stmts->data[i]);
+            }
+            return;
+        default:
+            error("unknown node: %d", node->op);
     }
-
-    error("unknown node: %d", node->op);
 }
 
 Vector *gen_ir(Vector *nodes) {
