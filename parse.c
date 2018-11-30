@@ -188,30 +188,29 @@ static Node *postfix() {
     Node *lhs = primary();
 
     for (;;) {
+        if (consume(TK_INC)) {
+            lhs = new_expr(ND_POST_INC, lhs);
+            continue;
+        }
+        if (consume(TK_DEC)) {
+            lhs = new_expr(ND_POST_DEC, lhs);
+            continue;
+        }
         if (consume('.')) {
-            Node *node = calloc(1, sizeof(Node));
-            node->op = ND_DOT;
-            node->expr = lhs;
-            node->name = ident();
-            lhs = node;
+            lhs = new_expr(ND_DOT, lhs);
+            lhs->name = ident();
             continue;
         }
-
         if (consume(TK_ARROW)) {
-            Node *node = calloc(1, sizeof(Node));
-            node->op = ND_DOT;
-            node->expr = new_expr(ND_DEREF, lhs);
-            node->name = ident();
-            lhs = node;
+            lhs = new_expr(ND_DOT, new_expr(ND_DEREF, lhs));
+            lhs->name = ident();
             continue;
         }
-
         if (consume('[')) {
             lhs = new_expr(ND_DEREF, new_binop('+', lhs, assign()));
             expect(']');
             continue;
         }
-
         return lhs;
     }
 }
@@ -228,6 +227,12 @@ static Node *unary() {
     }
     if (consume('!')) {
         return new_expr('!', unary());
+    }
+    if (consume(TK_INC)) {
+        return new_expr(ND_PRE_INC, unary());
+    }
+    if (consume(TK_DEC)) {
+        return new_expr(ND_PRE_DEC, unary());
     }
     if (consume(TK_SIZEOF)) {
         return new_expr(ND_SIZEOF, unary());

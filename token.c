@@ -28,6 +28,8 @@ static struct {
         {"while", TK_WHILE},
         {"!=", TK_NE},
         {"&&", TK_LOGAND},
+        {"++", TK_INC},
+        {"--", TK_DEC},
         {"->", TK_ARROW},
         {"<<", TK_SHL},
         {"<=", TK_LE},

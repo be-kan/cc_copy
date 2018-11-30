@@ -94,6 +94,10 @@ int main() {
     EXPECT(0-3, -3);
     EXPECT(0, !1);
     EXPECT(1, !0);
+    EXPECT(3, ({ int i = 3; return i++; }));
+    EXPECT(4, ({ int i = 3; return ++i; }));
+    EXPECT(3, ({ int i = 3; return i--; }));
+    EXPECT(2, ({ int i = 3; return --i; }));
     EXPECT(5, 0 ? 3 : 5);
     EXPECT(3, 1 ? 3 : 5);
     EXPECT(3, (1, 2, 3));

@@ -66,6 +66,33 @@ static int gen_lval(Node *node) {
     return r;
 }
 
+static int gen_pre_inc(Node *node, int num) {
+    int addr = gen_lval(node->expr);
+    int val = nreg++;
+    add(load_insn(node), val, addr);
+    int imm = nreg++;
+    add(IR_IMM, imm, num);
+    add(IR_ADD, val, imm);
+    kill(imm);
+    add(store_insn(node), addr, val);
+    kill(addr);
+    return val;
+}
+
+static int gen_post_inc(Node *node, int num) {
+    int addr = gen_lval(node->expr);
+    int val = nreg++;
+    add(load_insn(node), val, addr);
+    int imm = nreg++;
+    add(IR_IMM, imm, num);
+    add(IR_ADD, val, imm);
+    add(store_insn(node), addr, val);
+    kill(addr);
+    add(IR_SUB, val, imm);
+    kill(imm);
+    return val;
+}
+
 static int gen_binop(int ty, Node *node) {
     int lhs = gen_expr(node->lhs);
     int rhs = gen_expr(node->rhs);
@@ -205,6 +232,14 @@ static int gen_expr(Node *node) {
             add(IR_NEG, r, -1);
             return r;
         }
+        case ND_PRE_INC:
+            return gen_pre_inc(node, 1);
+        case ND_PRE_DEC:
+            return gen_pre_inc(node, -1);
+        case ND_POST_INC:
+            return gen_post_inc(node, 1);
+        case ND_POST_DEC:
+            return gen_post_inc(node, -1);
         case ',':
             kill(gen_expr(node->lhs));
             return gen_expr(node->rhs);
