@@ -124,6 +124,11 @@ int main() {
         for (int i = 5; i < 10; i++);
         return i;
     }));
+    EXPECT(5, ({
+        int i = 0;
+        for (0; i < 10; i++) if (i == 5) break;
+        return i;
+    }));
     EXPECT(45, ({
         int x = 0;
         int y = 0;

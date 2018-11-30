@@ -7,8 +7,8 @@ typedef struct Env {
     struct Env *next;
 } Env;
 
-static Env *env;
 static Vector *globals;
+static Env *env;
 static int str_label;
 static int stacksize;
 
@@ -75,6 +75,7 @@ static Node *walk(Node *node, bool decay) {
     switch (node->op) {
         case ND_NUM:
         case ND_NULL:
+        case ND_BREAK:
             return node;
         case ND_STR: {
             Var *var = new_global(node->ty, format(".L.str%d", str_label++), node->data, node->len);
