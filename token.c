@@ -126,15 +126,13 @@ loop:
         }
 
         if (*p == '\'') {
-            Token *t = add_token(v, TK_NUM, p);
-            p++;
+            Token *t = add_token(v, TK_NUM, p++);
             p = read_char(&t->val, p);
             continue;
         }
 
         if (*p == '"') {
-            Token *t = add_token(v, TK_STR, p);
-            p++;
+            Token *t = add_token(v, TK_STR, p++);
             StringBuilder *sb = new_sb();
             p = read_string(sb, p);
             t->str = sb_get(sb);
