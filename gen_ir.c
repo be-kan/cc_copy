@@ -18,6 +18,7 @@ static IR *add(int op, int lhs, int rhs) {
 
 static void kill(int r) { add(IR_KILL, r, -1); }
 static void label(int x) { add(IR_LABEL, x, -1); }
+static void jmp(int x) { add(IR_JMP, x, -1); }
 static int gen_expr(Node *node);
 
 static int choose_insn(Node *node, int op8, int op32, int op64) {
@@ -126,7 +127,7 @@ static int gen_expr(Node *node) {
             int r1 = gen_expr(node->lhs);
             add(IR_UNLESS, r1, x);
             add(IR_IMM, r1, 1);
-            add(IR_JMP, y, -1);
+            jmp(y);
             label(x);
 
             int r2 = gen_expr(node->rhs);
@@ -243,7 +244,7 @@ static int gen_expr(Node *node) {
             int r2 = gen_expr(node->then);
             add(IR_MOV, r, r2);
             kill(r2);
-            add(IR_JMP, y, -1);
+            jmp(y);
 
             label(x);
             int r3 = gen_expr(node->els);
@@ -289,7 +290,7 @@ static void gen_stmt(Node *node) {
                 add(IR_UNLESS, r, x);
                 kill(r);
                 gen_stmt(node->then);
-                add(IR_JMP, y, -1);
+                jmp(y);
                 label(x);
                 gen_stmt(node->els);
                 label(y);
@@ -320,7 +321,7 @@ static void gen_stmt(Node *node) {
             if (node->inc) {
                 gen_stmt(node->inc);
             }
-            add(IR_JMP, x, -1);
+            jmp(x);
             label(y);
             label(break_label);
             break_label = orig;
@@ -343,14 +344,14 @@ static void gen_stmt(Node *node) {
             if (!break_label) {
                 error("stray 'break' statement");
             }
-            add(IR_JMP, break_label, -1);
+            jmp(break_label);
             break;
         case ND_RETURN: {
             int r = gen_expr(node->expr);
             if (return_label) {
                 add(IR_MOV, return_reg, r);
                 kill(r);
-                add(IR_JMP, return_label, -1);
+                jmp(return_label);
                 return;
             }
             add(IR_RETURN, r, -1);
