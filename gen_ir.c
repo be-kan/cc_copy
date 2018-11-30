@@ -37,8 +37,9 @@ static void load(Node *node, int dst, int src) {
     ir->size = node->ty->size;
 }
 
-static int store_insn(Node *node) {
-    return choose_insn(node, IR_STORE8, IR_STORE32, IR_STORE64);
+static void store(Node *node, int dst, int src) {
+    IR *ir = add(IR_STORE, dst, src);
+    ir->size = node->ty->size;
 }
 
 static int store_arg_insn(Node *node) {
@@ -86,7 +87,7 @@ static int gen_pre_inc(Node *node, int num) {
     int val = nreg++;
     load(node, val, addr);
     add(IR_ADD_IMM, val, num * get_inc_scale(node));
-    add(store_insn(node), addr, val);
+    store(node, addr, val);
     kill(addr);
     return val;
 }
@@ -183,7 +184,7 @@ static int gen_expr(Node *node) {
         case '=': {
             int rhs = gen_expr(node->rhs);
             int lhs = gen_lval(node->lhs);
-            add(store_insn(node), lhs, rhs);
+            store(node, lhs, rhs);
             kill(rhs);
             return lhs;
         }
@@ -278,7 +279,7 @@ static void gen_stmt(Node *node) {
             int rhs = gen_expr(node->init);
             int lhs = nreg++;
             add(IR_BPREL, lhs, node->offset);
-            add(store_insn(node), lhs, rhs);
+            store(node, lhs, rhs);
             kill(lhs);
             kill(rhs);
             return;

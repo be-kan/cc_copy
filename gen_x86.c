@@ -154,14 +154,8 @@ void gen(Function *fn) {
                     emit("movzb %s, %s", regs[lhs], regs8[lhs]);
                 }
                 break;
-            case IR_STORE8:
-                emit("mov [%s], %s", regs[lhs], regs8[rhs]);
-                break;
-            case IR_STORE32:
-                emit("mov [%s], %s", regs[lhs], regs32[rhs]);
-                break;
-            case IR_STORE64:
-                emit("mov [%s], %s", regs[lhs], regs[rhs]);
+            case IR_STORE:
+                emit("mov [%s], %s", regs[lhs], reg(rhs, ir->size));
                 break;
             case IR_STORE8_ARG:
                 emit("mov [rbp-%d], %s", lhs, argreg8[rhs]);
