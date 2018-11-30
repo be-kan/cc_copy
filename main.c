@@ -14,7 +14,7 @@ static char *read_file(char *filename) {
         if (nread == 0) {
             break;
         }
-        sb_lappend(sb, buf, nread);
+        sb_append_n(sb, buf, nread);
     }
     return sb_get(sb);
 }
