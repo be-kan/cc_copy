@@ -119,6 +119,11 @@ int main() {
     EXPECT(5, 6 ^ 3);
     EXPECT(2, 6 & 3);
     EXPECT(0, 6 & 0);
+    EXPECT(1, ({
+        int i = 1;
+        for (int i = 5; i < 10; i++);
+        return i;
+    }));
     EXPECT(45, ({
         int x = 0;
         int y = 0;

@@ -126,10 +126,12 @@ static Node *walk(Node *node, bool decay) {
             }
             return node;
         case ND_FOR:
+            env = new_env(env);
             node->init = walk(node->init, true);
             node->cond = walk(node->cond, true);
             node->inc = walk(node->inc, true);
             node->body = walk(node->body, true);
+            env = env->next;
             return node;
         case ND_DO_WHILE:
             node->cond = walk(node->cond, true);
