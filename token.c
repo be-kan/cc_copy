@@ -189,15 +189,31 @@ static char *hexadecimal(char *p) {
     }
 }
 
+
+static char *octal(char *p) {
+    Token *t = add(TK_NUM, p++);
+    while ('0' <= *p && *p <= '7') {
+        t->val = t->val * 8 + *p++ - '0';
+    }
+    return p;
+}
+
+static char *decimal(char *p) {
+    Token *t = add(TK_NUM, p);
+    while (isdigit(*p)) {
+        t->val = t->val * 10 + *p++ - '0';
+    }
+    return p;
+}
+
 static char *number(char *p) {
     if (!strncasecmp(p, "0x", 2)) {
         return hexadecimal(p);
     }
-    Token *t = add(TK_NUM, p);
-    for (; isdigit(*p); p++) {
-        t->val = t->val * 10 + *p - '0';
+    if (*p == '0') {
+        return octal(p);
     }
-    return p;
+    return decimal(p);
 }
 
 static void scan() {

@@ -32,6 +32,7 @@ typedef int myint;
 int main() {
     EXPECT(0, 0);
     EXPECT(1, 1);
+    EXPECT(493, 0755);
     EXPECT(48879, 0xBEEF);
     EXPECT(255, 0Xff);
     EXPECT(2, 1 + 1);
@@ -198,6 +199,16 @@ int main() {
         int *p = &x;
         x = 5;
         return *p;
+    }));
+    EXPECT(40, ({
+        int ary[2][5];
+        return sizeof(ary);
+    }));
+    EXPECT(8, ({
+        int ary[2][2];
+        ary[0][0] = 3;
+        ary[1][0] = 5;
+        return add2(ary);
     }));
     EXPECT(3, ({
         int ary[2];
