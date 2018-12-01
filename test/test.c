@@ -137,6 +137,18 @@ int main() {
         }
         return i;
     }));
+    EXPECT(3, ({
+        int x;
+        int y;
+        x = y = 3;
+        return x;
+    }));
+    EXPECT(3, ({
+        int x;
+        int y;
+        x = y = 3;
+        return y;
+    }));
     EXPECT(45, ({
         int x = 0;
         int y = 0;

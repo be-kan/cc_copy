@@ -230,8 +230,8 @@ static int gen_expr(Node *node) {
             int rhs = gen_expr(node->rhs);
             int lhs = gen_lval(node->lhs);
             store(node, lhs, rhs);
-            kill(rhs);
-            return lhs;
+            kill(lhs);
+            return rhs;
         }
         case '+':
         case '-': {
