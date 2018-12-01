@@ -268,30 +268,15 @@ static Node *postfix() {
 }
 
 static Node *unary() {
-    if (consume('-')) {
-        return new_expr(ND_NEG, unary());
-    }
-    if (consume('*')) {
-        return new_expr(ND_DEREF, unary());
-    }
-    if (consume('&')) {
-        return new_expr(ND_ADDR, unary());
-    }
-    if (consume('!')) {
-        return new_expr('!', unary());
-    }
-    if (consume(TK_SIZEOF)) {
-        return new_expr(ND_SIZEOF, unary());
-    }
-    if (consume(TK_ALIGNOF)) {
-        return new_expr(ND_ALIGNOF, unary());
-    }
-    if (consume(TK_INC)) {
-        return new_binop(ND_ADD_EQ, unary(), new_num(1));
-    }
-    if (consume(TK_DEC)) {
-        return new_binop(ND_SUB_EQ, unary(), new_num(1));
-    }
+    if (consume('-'))        return new_expr(ND_NEG, unary());
+    if (consume('*'))        return new_expr(ND_DEREF, unary());
+    if (consume('&'))        return new_expr(ND_ADDR, unary());
+    if (consume('!'))        return new_expr('!', unary());
+    if (consume('~'))        return new_expr('~', unary());
+    if (consume(TK_SIZEOF))  return new_expr(ND_SIZEOF, unary());
+    if (consume(TK_ALIGNOF)) return new_expr(ND_ALIGNOF, unary());
+    if (consume(TK_INC))     return new_binop(ND_ADD_EQ, unary(), new_num(1));
+    if (consume(TK_DEC))     return new_binop(ND_SUB_EQ, unary(), new_num(1));
     return postfix();
 }
 

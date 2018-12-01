@@ -143,7 +143,11 @@ void gen(Function *fn) {
                 emit("or %s, %s", regs[lhs], regs[rhs]);
                 break;
             case IR_XOR:
-                emit("xor %s, %s", regs[lhs], regs[rhs]);
+                if (ir->is_imm) {
+                    emit("xor %s, %d", regs[lhs], rhs);
+                } else {
+                    emit("xor %s, %s", regs[lhs], regs[rhs]);
+                }
                 break;
             case IR_SHL:
                 emit("mov cl, %s", regs8[rhs]);
