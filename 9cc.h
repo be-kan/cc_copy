@@ -28,7 +28,9 @@ typedef struct {
 
 Map *new_map(void);
 void map_put(Map *map, char *key, void *val);
+void map_puti(Map *map, char *key, int val);
 void *map_get(Map *map, char *key);
+int map_geti(Map *map, char *key, int default_);
 bool map_exists(Map *map, char *key);
 
 typedef struct {
@@ -85,6 +87,16 @@ enum {
     TK_SHR,
     TK_INC,
     TK_DEC,
+    TK_MUL_EQ,
+    TK_DIV_EQ,
+    TK_MOD_EQ,
+    TK_ADD_EQ,
+    TK_SUB_EQ,
+    TK_SHL_EQ,
+    TK_SHR_EQ,
+    TK_BITAND_EQ,
+    TK_XOR_EQ,
+    TK_BITOR_EQ,
     TK_RETURN,
     TK_SIZEOF,
     TK_ALIGNOF,
@@ -130,6 +142,16 @@ enum {
     ND_PRE_DEC,
     ND_POST_INC,
     ND_POST_DEC,
+    ND_MUL_EQ,
+    ND_DIV_EQ,
+    ND_MOD_EQ,
+    ND_ADD_EQ,
+    ND_SUB_EQ,
+    ND_SHL_EQ,
+    ND_SHR_EQ,
+    ND_BITAND_EQ,
+    ND_XOR_EQ,
+    ND_BITOR_EQ,
     ND_RETURN,
     ND_SIZEOF,
     ND_ALIGNOF,
