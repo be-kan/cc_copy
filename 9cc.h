@@ -107,12 +107,13 @@ typedef struct {
     int ty;
     int val;
     char *name;
-    char *input;
     char *str;
     int len; // fix char -> int
+    char *start;
 } Token;
 
 Vector *tokenize(char *p);
+noreturn void bad_token(Token *t, char *msg);
 
 enum {
     ND_NUM = 256,
@@ -294,5 +295,7 @@ extern char *regs32[];
 extern int num_regs;
 
 void gen_x86(Vector *globals, Vector *fns);
+
+char *filename;
 
 void util_test();
