@@ -240,6 +240,8 @@ int main() {
         return sizeof x;
     }));
     EXPECT(4, sizeof("abc"));
+    EXPECT(7, sizeof("abc" "def"));
+    EXPECT(9, sizeof("ab\0c" "\0def"));
     EXPECT(1, ({
         char x;
         return _Alignof x;
