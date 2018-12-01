@@ -172,24 +172,27 @@ void gen(Function *fn) {
                 emit("mov [rbp-%d], %s", lhs, argreg(rhs, ir->size));
                 break;
             case IR_ADD:
-                emit("add %s, %s", regs[lhs], regs[rhs]);
-                break;
-            case IR_ADD_IMM:
-                emit("add %s, %d", regs[lhs], rhs);
+                if (ir->is_imm) {
+                    emit("add %s, %d", regs[lhs], rhs);
+                } else {
+                    emit("add %s, %s", regs[lhs], regs[rhs]);
+                }
                 break;
             case IR_SUB:
-                emit("sub %s, %s", regs[lhs], regs[rhs]);
-                break;
-            case IR_SUB_IMM:
-                emit("sub %s, %d", regs[lhs], rhs);
+                if (ir->is_imm) {
+                    emit("sub %s, %d", regs[lhs], rhs);
+                } else {
+                    emit("sub %s, %s", regs[lhs], regs[rhs]);
+                }
                 break;
             case IR_MUL:
-                emit("mov rax, %s", regs[rhs]);
-                emit("mul %s", regs[lhs]);
-                emit("mov %s, rax", regs[lhs]);
-                break;
-            case IR_MUL_IMM:
-                if (rhs < 256 && __builtin_popcount(rhs) == 1) {
+                if (!ir->is_imm) {
+                    emit("mov rax, %s", regs[rhs]);
+                    emit("mul %s", regs[lhs]);
+                    emit("mov %s, rax", regs[lhs]);
+                    break;
+                }
+                if (__builtin_popcount(rhs) == 1) {
                     emit("shl %s, %d", regs[lhs], __builtin_ctz(rhs));
                     break;
                 }

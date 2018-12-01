@@ -199,11 +199,8 @@ void dump_ir(Vector *irv);
 
 enum {
     IR_ADD,
-    IR_ADD_IMM,
     IR_SUB,
-    IR_SUB_IMM,
     IR_MUL,
-    IR_MUL_IMM,
     IR_DIV,
     IR_IMM,
     IR_BPREL,
@@ -238,6 +235,7 @@ typedef struct {
     int lhs;
     int rhs;
     int size;
+    bool is_imm;
     char *name;
     int nargs;
     int args[6];
@@ -245,6 +243,7 @@ typedef struct {
 
 enum {
     IR_TY_NOARG,
+    IR_TY_BINARY,
     IR_TY_REG,
     IR_TY_IMM,
     IR_TY_MEM,
