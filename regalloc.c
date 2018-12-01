@@ -14,7 +14,7 @@ static int alloc(int ir_reg) {
         return r;
     }
 
-    for (int i = 0; i < nregs; i++) {
+    for (int i = 0; i < num_regs; i++) {
         if (used[i]) continue;
         reg_map[ir_reg] = i;
         used[i] = true;
@@ -64,7 +64,7 @@ static void visit(Vector *irv) {
 }
 
 void alloc_regs(Vector *fns) {
-    used = calloc(1, nregs);
+    used = calloc(1, num_regs);
     for (int i = 0; i < reg_map_sz; i++) {
         reg_map[i] = -1;
     }
