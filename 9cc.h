@@ -40,7 +40,7 @@ typedef struct {
 } StringBuilder;
 
 StringBuilder *new_sb(void);
-void sb_add(StringBuilder *sb, char s);
+void sb_add(StringBuilder *sb, char c);
 void sb_append(StringBuilder *sb, char *s);
 void sb_append_n(StringBuilder *sb, char *s, int len);
 char *sb_get(StringBuilder *sb);
@@ -288,10 +288,12 @@ typedef struct {
 
 Vector *gen_ir(Vector *fns);
 
+void alloc_regs(Vector *irv);
+
 extern char *regs[];
 extern char *regs8[];
 extern char *regs32[];
-void alloc_regs(Vector *irv);
+extern int nregs;
 
 void gen_x86(Vector *globals, Vector *fns);
 
