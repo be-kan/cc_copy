@@ -54,6 +54,7 @@ typedef struct Type {
     int len;
     Vector *members;
     int offset;
+    struct Type *returning;
 } Type;
 
 Type *ptr_to(Type *base);
@@ -120,6 +121,7 @@ enum {
     ND_STR,
     ND_IDENT,
     ND_STRUCT,
+    ND_DECL,
     ND_VARDEF,
     ND_LVAR,
     ND_GVAR,
@@ -169,6 +171,7 @@ enum {
     PTR,
     ARY,
     STRUCT,
+    FUNC,
 };
 
 typedef struct Node {

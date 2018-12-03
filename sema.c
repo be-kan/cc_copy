@@ -273,12 +273,19 @@ static Node *walk(Node *node, bool decay) {
             Node *expr = walk(node->expr, false);
             return new_int(expr->ty->align);
         }
-        case ND_CALL:
+        case ND_CALL: {
+            Var *var = find_var(node->name);
+            if (var && var->ty->ty == FUNC) {
+                node->ty = var->ty->returning;
+            } else {
+                fprintf(stderr, "bad function: %s\n", node->name);
+                node->ty = &int_ty;
+            }
             for (int i = 0; i < node->args->len; i++) {
                 node->args->data[i] = walk(node->args->data[i], true);
             }
-            node->ty = &int_ty;
             return node;
+        }
         case ND_COMP_STMT: {
             env = new_env(env);
             for (int i = 0; i < node->stmts->len; i++) {
@@ -309,7 +316,15 @@ Vector *sema(Vector *nodes) {
             map_put(env->vars, node->name, var);
             continue;
         }
-        assert(node->op == ND_FUNC);
+        assert(node->op == ND_DECL || node->op == ND_FUNC);
+
+        Var *var = new_global(node->ty, node->name, "", 0);
+        map_put(env->vars, node->name, var);
+
+        if (node->op == ND_DECL) {
+            continue;
+        }
+
         stacksize = 0;
         for (int i = 0; i < node->args->len; i++) {
             node->args->data[i] = walk(node->args->data[i], true);
