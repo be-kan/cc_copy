@@ -101,6 +101,7 @@ enum {
     TK_RETURN,
     TK_SIZEOF,
     TK_ALIGNOF,
+    TK_PARAM,
     TK_EOF,
 };
 
@@ -110,13 +111,16 @@ typedef struct {
     char *name;
     char *str;
     int len; // fix char -> int
+    bool stringize;
     char *buf;
     char *path;
     char *start;
+    char *end;
 } Token;
 
 Vector *tokenize(char *path, bool add_eof);
 noreturn void bad_token(Token *t, char *msg);
+char *tokstr(Token *t);
 
 Vector *preprocess(Vector *tokens);
 

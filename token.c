@@ -81,6 +81,11 @@ noreturn void bad_token(Token *t, char *msg) {
     error(msg);
 }
 
+char *tokstr(Token *t) {
+    assert(t->start && t->end);
+    return strndup(t->start, t->end - t->start);
+}
+
 static Token *add(int ty, char *start) {
     Token *t = calloc(1, sizeof(Token));
     t->ty = ty;
@@ -166,9 +171,12 @@ static char *char_literal(char *p) {
         t->val = esc ? esc : p[1];
         p += 2;
     }
-    if (*p == '\'') {
-        return p + 1;
+    if (*p != '\'') {
+        goto err;
     }
+
+    t->end = p + 1;
+    return p + 1;
 
 err:
     bad_token(t, "unclosed character literal");
@@ -211,6 +219,7 @@ static char *ident(char *p) {
     int ty = map_geti(keywords, name, TK_IDENT);
     Token *t = add(ty, p);
     t->name = name;
+    t->end = p + len;
     return p + len;
 }
 
@@ -228,6 +237,7 @@ static char *hexadecimal(char *p) {
         } else if ('A' <= *p && *p <= 'F') {
             t->val = t->val * 16 + *p++ - 'A' + 10;
         } else {
+            t->end = p;
             return p;
         }
     }
@@ -238,6 +248,7 @@ static char *octal(char *p) {
     while ('0' <= *p && *p <= '7') {
         t->val = t->val * 8 + *p++ - '0';
     }
+    t->end = p;
     return p;
 }
 
@@ -246,6 +257,7 @@ static char *decimal(char *p) {
     while (isdigit(*p)) {
         t->val = t->val * 10 + *p++ - '0';
     }
+    t->end = p;
     return p;
 }
 
@@ -303,14 +315,16 @@ loop:
             if (strncmp(p, name, len)) {
                 continue;
             }
-            add(symbols[i].ty, p);
+            Token *t = add(symbols[i].ty, p);
             p += len;
+            t->end = p;
             goto loop;
         }
 
         if (strchr("+-*/;=(),{}<>[]&.!?:|^%~#", *p)) {
-            add(*p, p);
+            Token *t = add(*p, p);
             p++;
+            t->end = p;
             continue;
         }
 
