@@ -1,12 +1,12 @@
 #include "9cc.h"
 
-static char *input_file;
+static char *buf;
+static char *filename;
 
-static void print_line(char *pos) {
-    char *start = input_file;
+static void print_line(char *start, char *path, char *pos) {
     int line = 0;
     int col = 0;
-    for (char *p = input_file; p; p++) {
+    for (char *p = start; p; p++) {
         if (*p == '\n') {
             start = p + 1;
             line++;
@@ -18,7 +18,7 @@ static void print_line(char *pos) {
             continue;
         }
 
-        fprintf(stderr, "error at %s:%d:%d\n\n", filename, line + 1, col + 1);
+        fprintf(stderr, "error at %s:%d:%d\n\n", path, line + 1, col + 1);
 
         int linelen = strchr(p, '\n') - start;
         fprintf(stderr, "%.*s\n", linelen, start);
@@ -32,7 +32,7 @@ static void print_line(char *pos) {
 }
 
 noreturn void bad_token(Token *t, char *msg) {
-    print_line(t->start);
+    print_line(t->buf, t->filename, t->start);
     error(msg);
 }
 
@@ -43,6 +43,8 @@ static Token *add(int ty, char *start) {
     Token *t = calloc(1, sizeof(Token));
     t->ty = ty;
     t->start = start;
+    t->filename = filename;
+    t->buf = buf;
     vec_push(tokens, t);
     return t;
 }
@@ -76,6 +78,32 @@ static char escaped[256] = {
         ['E'] = '\033',
 };
 
+static char *read_file(char *path) {
+    FILE *fp = stdin;
+    if (strcmp(path, "-")) {
+        fp = fopen(path, "r");
+        if (!fp) {
+            perror(path);
+            exit(1);
+        }
+    }
+
+    StringBuilder *sb = new_sb();
+    char buf[4096];
+    for (;;) {
+        int nread = fread(buf, 1, sizeof(buf), fp);
+        if (nread == 0) {
+            break;
+        }
+        sb_append_n(sb, buf, nread);
+    }
+
+    if (sb->data[sb->len] != '\n') {
+        sb_add(sb, '\n');
+    }
+    return sb_get(sb);
+}
+
 static Map *keyword_map() {
     Map *map = new_map();
     map_puti(map, "_Alignof", TK_ALIGNOF);
@@ -102,7 +130,7 @@ static char *block_comment(char *pos) {
             return p + 2;
         }
     }
-    print_line(pos);
+    print_line(buf, filename, pos);
     error("unclosed comment");
 }
 
@@ -189,7 +217,6 @@ static char *hexadecimal(char *p) {
     }
 }
 
-
 static char *octal(char *p) {
     Token *t = add(TK_NUM, p++);
     while ('0' <= *p && *p <= '7') {
@@ -217,10 +244,16 @@ static char *number(char *p) {
 }
 
 static void scan() {
-    char *p = input_file;
+    char *p = buf;
 
 loop:
     while (*p) {
+        if (*p == '\n') {
+            add(*p, p);
+            p++;
+            continue;
+        }
+
         if (isspace(*p)) {
             p++;
             continue;
@@ -259,7 +292,7 @@ loop:
             goto loop;
         }
 
-        if (strchr("+-*/;=(),{}<>[]&.!?:|^%~", *p)) {
+        if (strchr("+-*/;=(),{}<>[]&.!?:|^%~#", *p)) {
             add(*p, p);
             p++;
             continue;
@@ -275,15 +308,13 @@ loop:
             continue;
         }
 
-        print_line(p);
+        print_line(buf, filename, p);
         error("cannot tokenize");
     }
-
-    add(TK_EOF, p);
 }
 
 static void canonicalize_newline() {
-    char *p = input_file;
+    char *p = buf;
     for (char *q = p; *q;) {
         if (q[0] == '\r' && q[1] == '\n') {
             q++;
@@ -294,7 +325,7 @@ static void canonicalize_newline() {
 }
 
 static void remove_backslash_newline() {
-    char *p = input_file;
+    char *p = buf;
     for (char *q = p; *q;) {
         if (q[0] == '\\' && q[1] == '\n') {
             q += 2;
@@ -305,6 +336,17 @@ static void remove_backslash_newline() {
     *p = '\0';
 }
 
+static void strip_newlines() {
+    Vector *v = new_vec();
+    for (int i = 0; i < tokens->len; i++) {
+        Token *t = tokens->data[i];
+        if (t->ty != '\n') {
+            vec_push(v, t);
+        }
+    }
+    tokens = v;
+}
+
 static void append(Token *x, Token *y) {
     StringBuilder *sb = new_sb();
     sb_append_n(sb, x->str, x->len - 1);
@@ -312,6 +354,7 @@ static void append(Token *x, Token *y) {
     x->str = sb_get(sb);
     x->len = sb->len;
 }
+
 static void join_string_literals() {
     Vector *v = new_vec();
     Token *last = NULL;
@@ -327,14 +370,35 @@ static void join_string_literals() {
     tokens = v;
 }
 
-Vector *tokenize(char *p) {
+Vector *tokenize(char *path, bool add_eof) {
+    if (!keywords) {
+        keywords = keyword_map();
+    }
+
+    Vector *tokens_ = tokens;
+    char *filename_ = filename;
+    char *buf_ = buf;
+
     tokens = new_vec();
-    keywords = keyword_map();
-    input_file = p;
+    filename = path;
+    buf = read_file(path);
 
     canonicalize_newline();
     remove_backslash_newline();
+
     scan();
+
+    if (add_eof) {
+        add(TK_EOF, buf);
+    }
+
+    tokens = preprocess(tokens);
+    strip_newlines();
     join_string_literals();
-    return tokens;
+
+    Vector *ret = tokens;
+    buf = buf_;
+    tokens = tokens_;
+    filename = filename_;
+    return ret;
 }

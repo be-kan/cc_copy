@@ -235,7 +235,6 @@ static Node *primary() {
         expect(')');
         return node;
     }
-
     bad_token(t, "primary expression expected");
 }
 
