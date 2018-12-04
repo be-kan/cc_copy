@@ -111,7 +111,7 @@ typedef struct {
     char *str;
     int len; // fix char -> int
     char *buf;
-    char *filename;
+    char *path;
     char *start;
 } Token;
 
