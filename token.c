@@ -11,16 +11,20 @@ typedef struct Context {
 static Context *ctx;
 static Map *keywords;
 
-static char *read_file(char *path) {
-    FILE *fp = stdin;
-    if (strcmp(path, "-")) {
-        fp = fopen(path, "r");
-        if (!fp) {
-            perror(path);
-            exit(1);
-        }
+static FILE *open_file(char *path) {
+    if (!strcmp(path, "-")) {
+        return stdin;
     }
 
+    FILE *fp = fopen(path, "r");
+    if (!fp) {
+        perror(path);
+        exit(1);
+    }
+    return fp;
+}
+
+static char *read_file(FILE *fp) {
     StringBuilder *sb = new_sb();
     char buf[4096];
     for (;;) {
@@ -31,9 +35,7 @@ static char *read_file(char *path) {
         sb_append_n(sb, buf, nread);
     }
 
-    if (sb->data[sb->len] != '\n') {
-        sb_add(sb, '\n');
-    }
+    sb_append(sb, "\n\n");
     return sb_get(sb);
 }
 
@@ -428,7 +430,8 @@ Vector *tokenize(char *path, bool add_eof) {
         keywords = keyword_map();
     }
 
-    char *buf = read_file(path);
+    FILE *fp = open_file(path);
+    char *buf = read_file(fp);
     canonicalize_newline(buf);
     remove_backslash_newline(buf);
 
