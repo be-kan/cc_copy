@@ -86,6 +86,16 @@ char *tokstr(Token *t) {
     return strndup(t->start, t->end - t->start);
 }
 
+int line(Token *t) {
+    int n = 0;
+    for (char *p = t->buf; p < t->end; p++) {
+        if (*p == '\n') {
+            n++;
+        }
+    }
+    return n;
+}
+
 static Token *add(int ty, char *start) {
     Token *t = calloc(1, sizeof(Token));
     t->ty = ty;
@@ -204,6 +214,7 @@ static char *string_literal(char *p) {
     }
     t->str = sb_get(sb);
     t->len = sb->len;
+    t->end = p + 1;
     return p + 1;
 
 err:
@@ -277,8 +288,9 @@ static void scan() {
 loop:
     while (*p) {
         if (*p == '\n') {
-            add(*p, p);
+            Token *t = add(*p, p);
             p++;
+            t->end = p;
             continue;
         }
 
