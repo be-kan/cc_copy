@@ -195,12 +195,25 @@ static Token *stringize(Vector *tokens) {
     return t;
 }
 
-static void apply(Macro *m, Token *start) {
-    if (m->ty == OBJLIKE) {
-        append(m->tokens);
-        return;
+static bool add_special_macro(Token *t) {
+    if (is_ident(t, "__LINE__")) {
+        add(new_int(get_line_number(t)));
+        return true;
     }
+    return false;
+}
 
+static void apply_objlike(Macro *m, Token *start) {
+    for (int i = 0; i < m->tokens->len; i++) {
+        Token *t = m->tokens->data[i];
+        if (add_special_macro(t)) {
+            continue;
+        }
+        add(t);
+    }
+}
+
+static void apply_funclike(Macro *m, Token *start) {
     get('(', "comma expected");
     Vector *args = read_args();
     if (m->params->len != args->len) {
@@ -209,8 +222,7 @@ static void apply(Macro *m, Token *start) {
 
     for (int i = 0; i < m->tokens->len; i++) {
         Token *t = m->tokens->data[i];
-        if (is_ident(t, "__LINE__")) {
-            add(new_int(get_line_number(t)));
+        if (add_special_macro(t)) {
             continue;
         }
 
@@ -222,8 +234,15 @@ static void apply(Macro *m, Token *start) {
             }
             continue;
         }
-
         add(t);
+    }
+}
+
+static void apply(Macro *m, Token *start) {
+    if (m->ty == OBJLIKE) {
+        apply_objlike(m, start);
+    } else {
+        apply_funclike(m, start);
     }
 }
 
