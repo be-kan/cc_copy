@@ -120,6 +120,7 @@ typedef struct {
 
 Vector *tokenize(char *path, bool add_eof);
 noreturn void bad_token(Token *t, char *msg);
+void warn_token(Token *t, char *msg);
 char *tokstr(Token *t);
 int get_line_number(Token *t);
 
@@ -205,6 +206,7 @@ typedef struct Node {
     Vector *globals;
     int offset;
     Vector *args;
+    Token *token;
 } Node;
 
 Vector *parse(Vector *tokens);
@@ -221,7 +223,7 @@ typedef struct {
 
 Vector *sema(Vector *nodes);
 
-Node *new_int_node(int val);
+Node *new_int_node(int val, Token *t);
 
 typedef struct {
     char *name;
