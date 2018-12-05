@@ -129,16 +129,21 @@ static void replace_params(Macro *m) {
     }
 
     Vector *v = new_vec();
-    for (int i = 0; i < tokens->len; i++) {
+    int i = 0;
+    for (; i < tokens->len - 1; i++) {
         Token *t1 = tokens->data[i];
         Token *t2 = tokens->data[i + 1];
-        if (i != tokens->len - 1 && t1->ty == '#' && t2->ty == TK_PARAM) {
+        if (t1->ty == '#' && t2->ty == TK_PARAM) {
             t2->stringize = true;
             vec_push(v, t2);
             i++;
         } else {
             vec_push(v, t1);
         }
+    }
+
+    if (i == tokens->len - 1) {
+        vec_push(v, tokens->data[i]);
     }
     m->tokens = v;
 }
