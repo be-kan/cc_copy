@@ -29,6 +29,22 @@ static Var *new_global(Type *ty, char *name, char *data, int len) {
     return var;
 }
 
+static Node *new_lvar_node(Type *ty, int offset) {
+    Node *node = calloc(1, sizeof(Node));
+    node->op = ND_LVAR;
+    node->ty = ty;
+    node->offset = offset;
+    return node;
+}
+
+static Node *new_gvar_node(Type *ty, char *name) {
+    Node *node = calloc(1, sizeof(Node));
+    node->op = ND_GVAR;
+    node->ty = ty;
+    node->name = name;
+    return node;
+}
+
 static Var *find_var(char *name) {
     for (Env *e = env; e; e = e->next) {
         Var *var = map_get(e->vars, name);
@@ -63,19 +79,11 @@ static void check_lval(Node *node) {
     }
 }
 
-static Node *new_int(int val) {
-    Node *node = calloc(1, sizeof(Node));
-    node->op = ND_NUM;
-    node->ty = INT;
-    node->val = val;
-    return node;
-}
-
 static Node *scale_ptr(Node *node, Type *ty) {
     Node *e = calloc(1, sizeof(Node));
     e->op = '*';
     e->lhs = node;
-    e->rhs = new_int(ty->ptr_to->size);
+    e->rhs = new_int_node(ty->ptr_to->size);
     return e;
 }
 
@@ -89,29 +97,22 @@ static Node *walk(Node *node, bool decay) {
             Var *var = new_global(node->ty, format(".L.str%d", str_label++), node->data, node->len);
             vec_push(globals, var);
 
-            Node *ret = calloc(1, sizeof(Node));
-            ret->op = ND_GVAR;
-            ret->ty = node->ty;
-            ret->name = var->name;
-            return maybe_decay(ret, decay);
+            Node *n = new_gvar_node(node->ty, var->name);
+            return maybe_decay(n, decay);
         }
         case ND_IDENT: {
             Var *var = find_var(node->name);
             if (!var) {
                 error("undefined variable: %s", node->name);
             }
+
+            Node *n;
             if (var->is_local) {
-                Node *ret = calloc(1, sizeof(Node));
-                ret->op = ND_LVAR;
-                ret->ty = var->ty;
-                ret->offset = var->offset;
-                return maybe_decay(ret, decay);
+                n = new_lvar_node(var->ty, var->offset);
+            } else {
+                n = new_gvar_node(var->ty, var->name);
             }
-            Node *ret = calloc(1, sizeof(Node));
-            ret->op = ND_GVAR;
-            ret->ty = var->ty;
-            ret->name = var->name;
-            return maybe_decay(ret, decay);
+            return maybe_decay(n, decay);
         }
         case ND_VARDEF: {
             stacksize = roundup(stacksize, node->ty->align);
@@ -267,11 +268,11 @@ static Node *walk(Node *node, bool decay) {
             return node;
         case ND_SIZEOF: {
             Node *expr = walk(node->expr, false);
-            return new_int(expr->ty->size);
+            return new_int_node(expr->ty->size);
         }
         case ND_ALIGNOF: {
             Node *expr = walk(node->expr, false);
-            return new_int(expr->ty->align);
+            return new_int_node(expr->ty->align);
         }
         case ND_CALL: {
             Var *var = find_var(node->name);

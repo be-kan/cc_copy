@@ -221,6 +221,8 @@ typedef struct {
 
 Vector *sema(Vector *nodes);
 
+Node *new_int_node(int val);
+
 typedef struct {
     char *name;
     int ty;
