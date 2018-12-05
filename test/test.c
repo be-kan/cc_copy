@@ -209,6 +209,10 @@ int main() {
         x = 5;
         return *p;
     }));
+    EXPECT(4, ({
+        int *p;
+        return (p + 5) - (p + 1);
+    }));
     EXPECT(40, ({
         int ary[2][5];
         return sizeof(ary);
