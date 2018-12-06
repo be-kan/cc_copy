@@ -214,7 +214,6 @@ typedef struct Node {
     struct Node *body;
     int stacksize;
     Vector *globals;
-    int offset;
     Vector *args;
     Token *token;
 } Node;

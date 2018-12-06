@@ -218,7 +218,6 @@ static Node *do_walk(Node *node, bool decay) {
                     continue;
                 }
                 node->ty = m->ty;
-                node->offset = m->ty->offset;
                 return maybe_decay(node, decay);
             }
             bad_node(node, format("member missing: %s", node->name));
