@@ -130,12 +130,10 @@ Vector *preprocess(Vector *tokens);
 enum {
     ND_NUM = 256,
     ND_STR,
-    ND_IDENT,
     ND_STRUCT,
     ND_DECL,
     ND_VARDEF,
-    ND_LVAR,
-    ND_GVAR,
+    ND_VAR,
     ND_IF,
     ND_FOR,
     ND_DO_WHILE,
@@ -185,6 +183,16 @@ enum {
     FUNC,
 };
 
+typedef struct {
+    Type *ty;
+    bool is_local;
+    int offset;
+    char *name;
+    bool is_extern;
+    char *data;
+    int len;
+} Var;
+
 typedef struct Node {
     int op;
     Type *ty;
@@ -194,6 +202,7 @@ typedef struct Node {
     struct Node *expr;
     Vector *stmts;
     char *name;
+    Var *var;
     bool is_extern;
     char *data;
     int len;
@@ -211,20 +220,8 @@ typedef struct Node {
 } Node;
 
 Vector *parse(Vector *tokens);
-
-typedef struct {
-    Type *ty;
-    bool is_local;
-    int offset;
-    char *name;
-    bool is_extern;
-    char *data;
-    int len;
-} Var;
-
-Vector *sema(Vector *nodes);
-
 Node *new_int_node(int val, Token *t);
+Vector *sema(Vector *nodes);
 
 typedef struct {
     char *name;
