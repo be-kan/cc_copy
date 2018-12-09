@@ -358,6 +358,10 @@ int main() {
     EXPECT(1, '\1');
     EXPECT(7, '\7');
     EXPECT(64, '\100');
+    EXPECT(64, "\10000"[0]);
+    EXPECT('0', "\10000"[1]);
+    EXPECT('0', "\10000"[2]);
+    EXPECT(0, "\10000"[3]);
     EXPECT('a', ({
         char *p = "abc";
         return p[0];
