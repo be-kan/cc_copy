@@ -82,6 +82,7 @@ enum {
     TK_DO,
     TK_WHILE,
     TK_BREAK,
+    TK_CONTINUE,
     TK_EQ,
     TK_NE,
     TK_LE,
@@ -144,6 +145,7 @@ enum {
     ND_FOR,
     ND_DO_WHILE,
     ND_BREAK,
+    ND_CONTINUE,
     ND_ADDR,
     ND_DEREF,
     ND_DOT,
@@ -214,6 +216,7 @@ typedef struct Node {
     struct Node *inc;
     struct Node *body;
     int break_label;
+    int continue_label;
     struct Node *target;
     int stacksize;
     Vector *globals;
