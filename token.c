@@ -138,18 +138,6 @@ static struct {
         {"|=", TK_OR_EQ},  {NULL, 0},
 };
 
-static char escaped[256] = {
-        ['a'] = '\a',
-        ['b'] = '\b',
-        ['f'] = '\f',
-        ['n'] = '\n',
-        ['r'] = '\r',
-        ['t'] = '\t',
-        ['v'] = '\v',
-        ['e'] = '\033',
-        ['E'] = '\033',
-};
-
 static Map *keyword_map() {
     Map *map = new_map();
     map_puti(map, "_Alignof", TK_ALIGNOF);
@@ -181,35 +169,66 @@ static char *block_comment(char *pos) {
     bad_position(pos, "unclosed comment");
 }
 
-static int c_char(int *res, char *p) {
+static int isoctal(char c) {
+    return '0' <= c && c <= '7';
+}
+
+static int hex(char c) {
+    if ('0' <= c && c <= '9') {
+        return c - '0';
+    }
+    if ('a' <= c && c <= 'f') {
+        return c - 'a' + 10;
+    }
+    assert('A' <= c && c <= 'F');
+    return c - 'A' + 10;
+}
+
+static char *c_char(int *res, char *p) {
     if (*p != '\\') {
         *res = *p;
-        return 1;
+        return p + 1;
     }
+    p++;
 
-    char *start = p++;
-    int esc = escaped[(unsigned)*p];
+    static char escaped[256] = {
+            ['a'] = '\a', ['b'] = '\b',   ['f'] = '\f',
+            ['n'] = '\n', ['r'] = '\r',   ['t'] = '\t',
+            ['v'] = '\v', ['e'] = '\033', ['E'] = '\033',
+    };
+
+    int esc = escaped[(uint8_t)*p];
     if (esc) {
         *res = esc;
-        return 2;
+        return p + 1;
     }
 
-    if ('0' <= *p && *p <= '7') {
+    if (*p == 'x') {
+        *res = 0;
+        p++;
+        while (isxdigit(*p))
+            *res = *res * 16 + hex(*p++);
+        return p;
+    }
+
+    if (isoctal(*p)) {
         int i = *p++ - '0';
-        if ('0' <= *p && *p <= '7')
+        if (isoctal(*p)) {
             i = i * 8 + *p++ - '0';
-        if ('0' <= *p && *p <= '7')
+        }
+        if (isoctal(*p)) {
             i = i * 8 + *p++ - '0';
+        }
         *res = i;
-        return p - start;
+        return p;
     }
     *res = *p;
-    return 2;
+    return p + 1;
 }
 
 static char *char_literal(char *p) {
     Token *t = add(TK_NUM, p++);
-    p += c_char(&t->val, p);
+    p = c_char(&t->val, p);
     if (*p != '\'') {
         bad_token(t, "unclosed character literal");
     }
@@ -227,7 +246,7 @@ static char *string_literal(char *p) {
             bad_token(t, "unclosed string literal");
         }
         int c;
-        p += c_char(&c, p);
+        p = c_char(&c, p);
         sb_add(sb, c);
     }
     t->str = sb_get(sb);
@@ -255,23 +274,16 @@ static char *hexadecimal(char *p) {
     if (!isxdigit(*p)) {
         bad_token(t, "bad hexadecimal number");
     }
-    for (;;) {
-        if ('0' <= *p && *p <= '9') {
-            t->val = t->val * 16 + *p++ - '0';
-        } else if ('a' <= *p && *p <= 'f') {
-            t->val = t->val * 16 + *p++ - 'a' + 10;
-        } else if ('A' <= *p && *p <= 'F') {
-            t->val = t->val * 16 + *p++ - 'A' + 10;
-        } else {
-            t->end = p;
-            return p;
-        }
+    while (isxdigit(*p)) {
+        t->val = t->val * 16 + hex(*p++);
     }
+    t->end = p;
+    return p;
 }
 
 static char *octal(char *p) {
     Token *t = add(TK_NUM, p++);
-    while ('0' <= *p && *p <= '7') {
+    while (isoctal(*p)) {
         t->val = t->val * 8 + *p++ - '0';
     }
     t->end = p;
