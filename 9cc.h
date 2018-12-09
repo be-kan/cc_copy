@@ -57,7 +57,6 @@ typedef struct Type {
     Vector *members;
     int offset;
     struct Type *returning;
-    struct Node *node;
 } Type;
 
 Type *ptr_to(Type *base);
@@ -225,8 +224,14 @@ typedef struct Node {
 } Node;
 
 typedef struct {
+    char *name;
+    int stacksize;
+    Node *node;
+    Vector *ir;
+} Function;
+
+typedef struct {
     Vector *gvars;
-    Vector *nodes;
     Vector *funcs;
 } Program;
 
@@ -304,13 +309,6 @@ enum {
     IR_TY_REG_LABEL,
     IR_TY_CALL,
 };
-
-typedef struct {
-    char *name;
-    int stacksize;
-    Vector *globals;
-    Vector *ir;
-} Function;
 
 void gen_ir(Program *prog);
 
