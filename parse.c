@@ -53,7 +53,7 @@ static void expect(int ty) {
         bad_token(t, format("%c expected", ty));
     }
     assert(ty == TK_WHILE);
-    bad_token(t, format("'while' expected", ty));
+    bad_token(t, "'while' expected");
     pos++;
 }
 
