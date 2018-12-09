@@ -45,7 +45,7 @@ static void append(Vector *v) {
     }
 }
 
-static void add(Token *t) {
+static void emit(Token *t) {
     vec_push(env->output, t);
 }
 
@@ -221,7 +221,7 @@ static Token *stringize(Token *tmpl, Vector *tokens) {
 
 static bool add_special_macro(Token *t) {
     if (is_ident(t, "__LINE__")) {
-        add(new_int(t, get_line_number(t)));
+        emit(new_int(t, get_line_number(t)));
         return true;
     }
     return false;
@@ -233,7 +233,7 @@ static void apply_objlike(Macro *m, Token *start) {
         if (add_special_macro(t)) {
             continue;
         }
-        add(t);
+        emit(t);
     }
 }
 
@@ -252,13 +252,13 @@ static void apply_funclike(Macro *m, Token *start) {
 
         if (t->ty == TK_PARAM) {
             if (t->stringize) {
-                add(stringize(t, args->data[t->val]));
+                emit(stringize(t, args->data[t->val]));
             } else {
                 append(args->data[t->val]);
             }
             continue;
         }
-        add(t);
+        emit(t);
     }
 }
 
@@ -318,13 +318,13 @@ Vector *preprocess(Vector *tokens) {
             if (m) {
                 apply(m, t);
             } else {
-                add(t);
+                emit(t);
             }
             continue;
         }
 
         if (t->ty != '#') {
-            add(t);
+            emit(t);
             continue;
         }
 
