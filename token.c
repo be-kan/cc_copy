@@ -1,14 +1,14 @@
 #include "9cc.h"
 
-typedef struct Context {
+typedef struct Env {
     char *path;
     char *buf;
     char *pos;
     Vector *tokens;
-    struct Context *next;
-} Context;
+    struct Env *next;
+} Env;
 
-static Context *ctx;
+static Env *env;
 static Map *keywords;
 
 static FILE *open_file(char *path) {
@@ -39,14 +39,14 @@ static char *read_file(FILE *fp) {
     return sb_get(sb);
 }
 
-static Context *new_ctx(Context *next, char *path, char *buf) {
-    Context *ctx = calloc(1, sizeof(Context));
-    ctx->path = strcmp(path, "-") ? path : "(stdin)";
-    ctx->buf = buf;
-    ctx->pos = ctx->buf;
-    ctx->tokens = new_vec();
-    ctx->next = next;
-    return ctx;
+static Env *new_env(Env *next, char *path, char *buf) {
+    Env *env = calloc(1, sizeof(Env));
+    env->path = strcmp(path, "-") ? path : "(stdin)";
+    env->buf = buf;
+    env->pos = env->buf;
+    env->tokens = new_vec();
+    env->next = next;
+    return env;
 }
 
 static void print_line(char *buf, char *path, char *pos) {
@@ -92,7 +92,7 @@ void warn_token(Token *t, char *msg) {
 }
 
 noreturn static void bad_position(char *p, char *msg) {
-    print_line(ctx->buf, ctx->path, p);
+    print_line(env->buf, env->path, p);
     error(msg);
 }
 
@@ -115,9 +115,9 @@ static Token *add(int ty, char *start) {
     Token *t = calloc(1, sizeof(Token));
     t->ty = ty;
     t->start = start;
-    t->path = ctx->path;
-    t->buf = ctx->buf;
-    vec_push(ctx->tokens, t);
+    t->path = env->path;
+    t->buf = env->buf;
+    vec_push(env->tokens, t);
     return t;
 }
 
@@ -299,7 +299,7 @@ static char *number(char *p) {
 }
 
 static void scan() {
-    char *p = ctx->buf;
+    char *p = env->buf;
 
 loop:
     while (*p) {
@@ -443,15 +443,15 @@ Vector *tokenize(char *path, bool add_eof) {
     canonicalize_newline(buf);
     remove_backslash_newline(buf);
 
-    ctx = new_ctx(ctx, path, buf);
+    env = new_env(env, path, buf);
     scan();
 
     if (add_eof) {
         add(TK_EOF, NULL);
     }
 
-    Vector *v = ctx->tokens;
-    ctx = ctx->next;
+    Vector *v = env->tokens;
+    env = env->next;
 
     v = preprocess(v);
     v = strip_newline_tokens(v);
