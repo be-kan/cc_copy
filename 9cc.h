@@ -175,7 +175,7 @@ enum {
 };
 
 enum {
-    INT,
+    INT = 1,
     CHAR,
     VOID,
     PTR,
@@ -211,6 +211,7 @@ typedef struct Node {
     struct Node *body;
     int stacksize;
     Vector *globals;
+    Vector *lvars;
     Vector *args;
     Token *token;
 } Node;
