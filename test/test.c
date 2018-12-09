@@ -177,8 +177,7 @@ int main() {
         do {
             x++;
             break;
-        }
-        while (1);
+        } while (1);
         return x;
     }));
     EXPECT(1, ({
@@ -186,8 +185,7 @@ int main() {
         do {
             x++;
             continue;
-        }
-        while (0);
+        } while (0);
         return x;
     }));
     EXPECT(60, ({
@@ -354,6 +352,12 @@ int main() {
         p[0] = 42;
         return x;
     }));
+    EXPECT(0, '\0');
+    EXPECT(0, '\00');
+    EXPECT(0, '\000');
+    EXPECT(1, '\1');
+    EXPECT(7, '\7');
+    EXPECT(64, '\100');
     EXPECT('a', ({
         char *p = "abc";
         return p[0];
