@@ -20,6 +20,7 @@ typedef struct {
 
 Vector *new_vec(void);
 void vec_push(Vector *v, void *elem);
+void vec_pop(Vector *v);
 
 typedef struct {
     Vector *keys;
@@ -130,6 +131,8 @@ int get_line_number(Token *t);
 
 Vector *preprocess(Vector *tokens);
 
+extern int nlabel;
+
 enum {
     ND_NUM = 256,
     ND_STR,
@@ -210,6 +213,8 @@ typedef struct Node {
     struct Node *init;
     struct Node *inc;
     struct Node *body;
+    int break_label;
+    struct Node *target;
     int stacksize;
     Vector *globals;
     Vector *lvars;
