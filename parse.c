@@ -797,9 +797,8 @@ static void toplevel() {
     }
 
     ty->is_extern = is_extern;
-    char *data = calloc(1, ty->size);
     int len = ty->size;
-    add_gvar(ty, name, data, len);
+    add_gvar(ty, name, NULL, len);
 }
 
 static bool is_eof() {
