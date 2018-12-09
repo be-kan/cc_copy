@@ -120,9 +120,6 @@ void gen(Function *fn) {
             case IR_LABEL_ADDR:
                 emit("lea %s, %s[rip]", regs[lhs], ir->name); // add [rip]
                 break;
-            case IR_NEG:
-                emit("neg %s", regs[lhs]);
-                break;
             case IR_EQ:
                 emit_cmp("sete", ir);
                 break;
