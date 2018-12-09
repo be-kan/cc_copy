@@ -132,7 +132,8 @@ static bool is_typename() {
     if (t->ty == TK_IDENT) {
         return find_typedef(t->name);
     }
-    return t->ty == TK_INT || t->ty == TK_CHAR || t->ty == TK_VOID || t->ty == TK_STRUCT;
+    return t->ty == TK_INT || t->ty == TK_CHAR || t->ty == TK_VOID ||
+           t->ty == TK_STRUCT || t->ty == TK_TYPEOF;
 }
 
 static Node *declaration(bool define);
@@ -168,6 +169,12 @@ static Type *decl_specifiers() {
     if (t->ty == TK_INT) return int_ty();
     if (t->ty == TK_CHAR) return char_ty();
     if (t->ty == TK_VOID) return void_ty();
+    if (t->ty == TK_TYPEOF) {
+        expect('(');
+        Node *node = expr();
+        expect(')');
+        return get_type(node);
+    }
     if (t->ty == TK_STRUCT) {
         char *tag = NULL;
         Token *t = tokens->data[pos];

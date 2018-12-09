@@ -56,6 +56,7 @@ typedef struct Type {
     Vector *members;
     int offset;
     struct Type *returning;
+    struct Node *node;
 } Type;
 
 Type *ptr_to(Type *base);
@@ -103,6 +104,7 @@ enum {
     TK_RETURN,
     TK_SIZEOF,
     TK_ALIGNOF,
+    TK_TYPEOF,
     TK_PARAM,
     TK_EOF,
 };
@@ -166,6 +168,7 @@ enum {
     ND_RETURN,
     ND_SIZEOF,
     ND_ALIGNOF,
+    ND_TYPEOF,
     ND_CALL,
     ND_FUNC,
     ND_COMP_STMT,
@@ -182,6 +185,7 @@ enum {
     ARY,
     STRUCT,
     FUNC,
+    TYPEOF,
 };
 
 typedef struct {
@@ -226,6 +230,7 @@ Program *parse(Vector *tokens);
 
 Node *new_int_node(int val, Token *t);
 
+Type *get_type(Node *node);
 void sema(Program *prog);
 
 typedef struct {
