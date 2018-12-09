@@ -243,7 +243,7 @@ void gen_x86(Program *prog) {
     printf(".data\n");
     for (int i = 0; i < prog->gvars->len; i++) {
         Var *var = prog->gvars->data[i];
-        if (var->is_extern) {
+        if (var->ty->is_extern) {
             continue;
         }
         printf("%s:\n", var->name);

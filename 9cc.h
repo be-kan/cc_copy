@@ -49,6 +49,7 @@ typedef struct Type {
     int ty;
     int size;
     int align;
+    bool is_extern;
     struct Type *ptr_to;
     struct Type *ary_of;
     int len;
@@ -188,7 +189,6 @@ typedef struct {
     bool is_local;
     int offset;
     char *name;
-    bool is_extern;
     char *data;
     int len;
 } Var;
@@ -203,7 +203,6 @@ typedef struct Node {
     Vector *stmts;
     char *name;
     Var *var;
-    bool is_extern;
     char *data;
     int len;
     struct Node *cond;
