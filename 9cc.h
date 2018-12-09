@@ -203,8 +203,6 @@ typedef struct Node {
     Vector *stmts;
     char *name;
     Var *var;
-    char *data;
-    int len;
     struct Node *cond;
     struct Node *then;
     struct Node *els;

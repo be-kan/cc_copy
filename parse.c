@@ -6,9 +6,11 @@ typedef struct Env {
     struct Env *next;
 } Env;
 
+static Program *prog;
 static Vector *tokens;
 static int pos;
 struct Env *env;
+static int str_label = 1;
 static Node null_stmt = {ND_NULL};
 static Node break_stmt = {ND_BREAK};
 
@@ -38,6 +40,17 @@ static Type *find_tag(char *name) {
         }
     }
     return NULL;
+}
+
+static Var *add_gvar(Type *ty, char *name, char *data, int len) {
+    Var *var = calloc(1, sizeof(Var));
+    var->ty = ty;
+    var->is_local = false;
+    var->name = name;
+    var->data = data;
+    var->len = len;
+    vec_push(prog->gvars, var);
+    return var;
 }
 
 static Node *assign();
@@ -221,10 +234,11 @@ static Node *primary() {
         return new_int_node(t->val, t);
     }
     if (t->ty == TK_STR) {
-        Node *node = new_node(ND_STR, t);
-        node->ty = ary_of(char_ty(), t->len);
-        node->data = t->str;
-        node->len = t->len;
+        Type *ty = ary_of(char_ty(), t->len);
+        char *name = format(".L.str%d", str_label++);
+        Node *node = new_node(ND_VAR, t);
+        node->ty = ty;
+        node->var = add_gvar(ty, name, t->str, t->len);
         return node;
     }
     if (t->ty == TK_IDENT) {
@@ -659,7 +673,7 @@ static Node *compound_stmt() {
     return node;
 }
 
-static Node *toplevel() {
+static void toplevel() {
     bool is_typedef = consume(TK_TYPEDEF);
     bool is_extern = consume(TK_EXTERN);
 
@@ -673,6 +687,7 @@ static Node *toplevel() {
     if (consume('(')) {
         Token *t = tokens->data[pos];
         Node *node = new_node(ND_DECL, t);
+        vec_push(prog->nodes, node);
         node->name = name;
         node->args = new_vec();
 
@@ -689,7 +704,7 @@ static Node *toplevel() {
         }
 
         if (consume(';')) {
-            return node;
+            return;
         }
 
         node->op = ND_FUNC;
@@ -699,28 +714,20 @@ static Node *toplevel() {
             bad_token(t, "typedef has function definition");
         }
         node->body = compound_stmt();
-        return node;
+        return;
     }
 
     ty = read_array(ty);
     expect(';');
     if (is_typedef) {
         map_put(env->typedefs, name, ty);
-        return NULL;
+        return;
     }
 
-    Token *t = tokens->data[pos];
-    Node *node = new_node(ND_VARDEF, t);
-    node->ty = ty;
-    node->ty->is_extern = is_extern;
-    node->name = name;
-
-    if (!is_extern) {
-        node->data = calloc(1, node->ty->size);
-        node->len = node->ty->size;
-    }
-
-    return node;
+    ty->is_extern = is_extern;
+    char *data = calloc(1, ty->size);
+    int len = ty->size;
+    add_gvar(ty, name, data, len);
 }
 
 Program *parse(Vector *tokens_) {
@@ -728,21 +735,16 @@ Program *parse(Vector *tokens_) {
     pos = 0;
     env = new_env(env);
 
-    Vector *v = new_vec();
+    prog = calloc(1, sizeof(Program));
+    prog->nodes = new_vec();
+    prog->gvars = new_vec();
+    prog->funcs = new_vec();
     for (;;) {
         Token *t = tokens->data[pos];
         if (t->ty == TK_EOF) {
             break;
         }
-        Node *node = toplevel();
-        if (node) {
-            vec_push(v, node);
-        }
+        toplevel();
     }
-
-    Program *prog = calloc(1, sizeof(Program));
-    prog->nodes = v;
-    prog->gvars = new_vec();
-    prog->funcs = new_vec();
     return prog;
 }
