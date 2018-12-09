@@ -134,8 +134,8 @@ static struct {
         {"||", TK_LOGOR},     {"*=", TK_MUL_EQ},
         {"/=", TK_DIV_EQ},    {"%=", TK_MOD_EQ},
         {"+=", TK_ADD_EQ},    {"-=", TK_SUB_EQ},
-        {"&=", TK_BITAND_EQ}, {"^=", TK_XOR_EQ},
-        {"|=", TK_BITOR_EQ},  {NULL, 0},
+        {"&=", TK_AND_EQ}, {"^=", TK_XOR_EQ},
+        {"|=", TK_OR_EQ},  {NULL, 0},
 };
 
 static char escaped[256] = {
