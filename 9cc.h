@@ -218,9 +218,17 @@ typedef struct Node {
     Token *token;
 } Node;
 
-Vector *parse(Vector *tokens);
+typedef struct {
+    Vector *gvars;
+    Vector *nodes;
+    Vector *funcs;
+} Program;
+
+Program *parse(Vector *tokens);
+
 Node *new_int_node(int val, Token *t);
-Vector *sema(Vector *nodes);
+
+void sema(Program *prog);
 
 typedef struct {
     char *name;
@@ -298,15 +306,15 @@ typedef struct {
     Vector *ir;
 } Function;
 
-Vector *gen_ir(Vector *fns);
+void gen_ir(Program *prog);
 
-void alloc_regs(Vector *irv);
+void alloc_regs(Program *prog);
 
 extern char *regs[];
 extern char *regs8[];
 extern char *regs32[];
 extern int num_regs;
 
-void gen_x86(Vector *globals, Vector *fns);
+void gen_x86(Program *prog);
 
 void util_test();

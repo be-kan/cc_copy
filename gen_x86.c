@@ -238,11 +238,11 @@ void gen(Function *fn) {
     emit("ret");
 }
 
-void gen_x86(Vector *globals, Vector *fns) {
+void gen_x86(Program *prog) {
     printf(".intel_syntax noprefix\n");
     printf(".data\n");
-    for (int i = 0; i < globals->len; i++) {
-        Var *var = globals->data[i];
+    for (int i = 0; i < prog->gvars->len; i++) {
+        Var *var = prog->gvars->data[i];
         if (var->is_extern) {
             continue;
         }
@@ -251,7 +251,7 @@ void gen_x86(Vector *globals, Vector *fns) {
     }
 
     printf(".text\n");
-    for (int i = 0; i < fns->len; i++) {
-        gen(fns->data[i]);
+    for (int i = 0; i < prog->funcs->len; i++) {
+        gen(prog->funcs->data[i]);
     }
 }
