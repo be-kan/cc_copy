@@ -782,13 +782,6 @@ static Node *compound_stmt() {
     return node;
 }
 
-static Function *new_function(Node *node, char *name) {
-    Function *fn = malloc(sizeof(Function));
-    fn->name = name;
-    fn->node = node;
-    return fn;
-}
-
 static void toplevel() {
     bool is_typedef = consume(TK_TYPEDEF);
     bool is_extern = consume(TK_EXTERN);
@@ -829,8 +822,6 @@ static void toplevel() {
             return;
         }
 
-        vec_push(prog->funcs, new_function(node, name));
-
         node->op = ND_FUNC;
         t = tokens->data[pos];
         expect('{');
@@ -838,7 +829,12 @@ static void toplevel() {
             bad_token(t, "typedef has function definition");
         }
         node->body = compound_stmt();
-        node->lvars = lvars;
+
+        Function *fn = calloc(1, sizeof(Function));
+        fn->name = name;
+        fn->node = node;
+        fn->lvars = lvars;
+        vec_push(prog->funcs, fn);
         return;
     }
 

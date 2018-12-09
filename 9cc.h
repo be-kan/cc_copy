@@ -215,18 +215,16 @@ typedef struct Node {
     int break_label;
     int continue_label;
     struct Node *target;
-    int stacksize;
-    Vector *globals;
-    Vector *lvars;
     Vector *args;
     Token *token;
 } Node;
 
 typedef struct {
     char *name;
-    int stacksize;
     Node *node;
+    Vector *lvars;
     Vector *ir;
+    int stacksize;
 } Function;
 
 typedef struct {
