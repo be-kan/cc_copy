@@ -98,20 +98,22 @@ static Node *do_walk(Node *node, bool decay) {
             } else {
                 node->ty = int_ty();
             }
-
             return node;
         case '-': {
             node->lhs = walk(node->lhs);
             node->rhs = walk(node->rhs);
-            Type *l = node->lhs->ty;
-            Type *r = node->rhs->ty;
-            if (l->ty == PTR && r->ty == PTR) {
-                if (!same_type(r, l)) {
+
+            Type *lty = node->lhs->ty;
+            Type *rty = node->rhs->ty;
+            if (lty->ty == PTR && rty->ty == PTR) {
+                if (!same_type(rty, lty)) {
                     bad_node(node, "incompatible pointer");
                 }
-                node = scale_ptr('/', node, l);
+                node = scale_ptr('/', node, lty);
+                node->ty = lty;
+            } else {
+                node->ty = int_ty();
             }
-            node->ty = node->lhs->ty;
             return node;
         }
         case ND_ADD_EQ:
@@ -122,6 +124,9 @@ static Node *do_walk(Node *node, bool decay) {
             node->ty = node->lhs->ty;
             if (node->lhs->ty->ty == PTR) {
                 node->rhs = scale_ptr('*', node->rhs, node->lhs->ty);
+                node->ty = node->lhs->ty;
+            } else {
+                node->ty = int_ty();
             }
             return node;
         case '=':
@@ -197,7 +202,7 @@ static Node *do_walk(Node *node, bool decay) {
         case '~':
             node->expr = walk(node->expr);
             check_int(node->expr);
-            node->ty = node->expr->ty;
+            node->ty = int_ty();
             return node;
         case ND_ADDR:
             node->expr = walk(node->expr);
