@@ -201,7 +201,6 @@ typedef struct {
     bool is_local;
     int offset;
     char *data;
-    int len;
 } Var;
 
 typedef struct Node {
