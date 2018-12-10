@@ -54,7 +54,7 @@ typedef struct Type {
     struct Type *ptr_to;
     struct Type *ary_of;
     int len;
-    Vector *members;
+    Map *members;
     int offset;
     struct Type *returning;
 } Type;
