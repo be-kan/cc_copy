@@ -270,14 +270,13 @@ static Node *function_call(Token *t) {
         warn_token(t, "undefined function");
         node->ty = func_ty(int_ty());
     }
-    if (consume(')')) {
-        return node;
-    }
-    vec_push(node->args, assign());
-    while (consume(',')) {
+
+    while (!consume(')')) {
+        if (node->args->len > 0) {
+            expect(',');
+        }
         vec_push(node->args, assign());
     }
-    expect(')');
     return node;
 }
 
@@ -788,6 +787,14 @@ static void toplevel() {
     char *name = ident();
 
     if (consume('(')) {
+        Vector *params = new_vec();
+        while (!consume(')')) {
+            if (params->len > 0) {
+                expect(',');
+            }
+            vec_push(params, param_declaration());
+        }
+
         Token *t = tokens->data[pos];
         Node *node = new_node(ND_DECL, t);
 
@@ -796,19 +803,11 @@ static void toplevel() {
         continues = new_vec();
 
         node->name = name;
-        node->params = new_vec();
+        node->params = params;
 
         node->ty = calloc(1, sizeof(Type));
         node->ty->ty = FUNC;
         node->ty->returning = ty;
-
-        if (!consume(')')) {
-            vec_push(node->params, param_declaration());
-            while (consume(',')) {
-                vec_push(node->params, param_declaration());
-            }
-            expect(')');
-        }
 
         add_lvar(node->ty, name);
 
