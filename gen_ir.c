@@ -42,11 +42,6 @@ static void store(Node *node, int dst, int src) {
     ir->size = node->ty->size;
 }
 
-static void store_arg(Node *node, int bpoff, int argreg) {
-    IR *ir = add(IR_STORE_ARG, bpoff, argreg);
-    ir->size = node->ty->size;
-}
-
 static int gen_lval(Node *node) {
     if (node->op == ND_DEREF) {
         return gen_expr(node->expr);
@@ -401,9 +396,10 @@ void gen_ir(Program *prog) {
         assert(node->op == ND_FUNC);
         code = new_vec();
 
-        for (int i = 0; i < node->args->len; i++) {
-            Node *arg = node->args->data[i];
-            store_arg(arg, arg->var->offset, i);
+        for (int i = 0; i < node->params->len; i++) {
+            Var *var = node->params->data[i];
+            IR *ir = add(IR_STORE_ARG, var->offset, i);
+            ir->size = var->ty->size;
         }
 
         gen_stmt(node->body);

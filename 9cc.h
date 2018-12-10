@@ -197,9 +197,9 @@ enum {
 
 typedef struct {
     Type *ty;
+    char *name;
     bool is_local;
     int offset;
-    char *name;
     char *data;
     int len;
 } Var;
@@ -223,6 +223,7 @@ typedef struct Node {
     int break_label;
     int continue_label;
     struct Node *target;
+    Vector *params;
     Vector *args;
     Token *token;
 } Node;

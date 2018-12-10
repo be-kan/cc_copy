@@ -621,14 +621,14 @@ static Node *declaration() {
     return new_expr(ND_EXPR_STMT, t, expr);
 }
 
-static Node *param_declaration() {
+static Var *param_declaration() {
     Type *ty = decl_specifiers();
     Node *node = declarator(ty);
-    if (node->ty->ty == ARY) {
-        node->ty = ptr_to(node->ty->ary_of);
+    ty = node->ty;
+    if (ty->ty == ARY) {
+        ty = ptr_to(ty->ary_of);
     }
-    node->var = add_lvar(node->ty, node->name);
-    return node;
+    return add_lvar(ty, node->name);
 }
 
 static Node *expr_stmt() {
@@ -796,16 +796,16 @@ static void toplevel() {
         continues = new_vec();
 
         node->name = name;
-        node->args = new_vec();
+        node->params = new_vec();
 
         node->ty = calloc(1, sizeof(Type));
         node->ty->ty = FUNC;
         node->ty->returning = ty;
 
         if (!consume(')')) {
-            vec_push(node->args, param_declaration());
+            vec_push(node->params, param_declaration());
             while (consume(',')) {
-                vec_push(node->args, param_declaration());
+                vec_push(node->params, param_declaration());
             }
             expect(')');
         }
