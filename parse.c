@@ -13,6 +13,7 @@ static Program *prog;
 static Vector *lvars;
 static Vector *breaks;
 static Vector *continues;
+static Vector *switches;
 
 static Vector *tokens;
 static int pos;
@@ -595,6 +596,15 @@ static Node *expr() {
     return new_binop(',', t, lhs, expr());
 }
 
+static int const_expr() {
+    Token *t = tokens->data[pos];
+    Node *node = expr();
+    if (node->op != ND_NUM) {
+        bad_token(t, "constant expression expected");
+    }
+    return node->val;
+}
+
 static Type *read_array(Type *ty) {
     Vector *v = new_vec();
     while (consume('[')) {
@@ -602,12 +612,7 @@ static Type *read_array(Type *ty) {
             vec_push(v, (void *)(intptr_t)-1);
             continue;
         }
-        Token *t = tokens->data[pos];
-        Node *len = expr();
-        if (len->op != ND_NUM) {
-            bad_token(t, "number expected");
-        }
-        vec_push(v, (void *)(intptr_t)len->val);
+        vec_push(v, (void *)(intptr_t)const_expr());
         expect(']');
     }
     for (int i = v->len - 1; i >= 0; i--) {
@@ -769,6 +774,36 @@ static Node *stmt() {
             vec_pop(continues);
             return node;
         }
+        case TK_SWITCH: {
+            Node *node = new_node(ND_SWITCH, t);
+            node->cases = new_vec();
+            node->break_label = nlabel++;
+
+            expect('(');
+            node->cond = expr();
+            expect(')');
+
+            vec_push(breaks, node);
+            vec_push(switches, node);
+            node->body = stmt();
+            vec_pop(breaks);
+            vec_pop(switches);
+            return node;
+        }
+        case TK_CASE: {
+            if (switches->len == 0) {
+                bad_token(t, "stray case");
+            }
+            Node *node = new_node(ND_CASE, t);
+            node->case_label = nlabel++;
+            node->val = const_expr();
+            expect(':');
+            node->body = stmt();
+
+            Node *n = switches->data[switches->len - 1];
+            vec_push(n->cases, node);
+            return node;
+        }
         case TK_BREAK: {
             if (breaks->len == 0) {
                 bad_token(t, "stray break");
@@ -843,6 +878,7 @@ static void toplevel() {
         lvars = new_vec();
         breaks = new_vec();
         continues = new_vec();
+        switches = new_vec();
 
         node->name = name;
         node->params = params;

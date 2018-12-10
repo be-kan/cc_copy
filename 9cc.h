@@ -87,6 +87,8 @@ enum {
     TK_FOR,
     TK_DO,
     TK_WHILE,
+    TK_SWITCH,
+    TK_CASE,
     TK_BREAK,
     TK_CONTINUE,
     TK_EQ,
@@ -150,6 +152,8 @@ enum {
     ND_IF,
     ND_FOR,
     ND_DO_WHILE,
+    ND_SWITCH,
+    ND_CASE,
     ND_BREAK,
     ND_CONTINUE,
     ND_ADDR,
@@ -209,6 +213,8 @@ typedef struct Node {
     Node *init;
     Node *inc;
     Node *body;
+    Vector *cases;
+    int case_label;
     int break_label;
     int continue_label;
     Node *target;
