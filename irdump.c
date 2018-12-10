@@ -36,9 +36,6 @@ static char *tostr(IR *ir) {
     IRInfo info = irinfo[ir->op];
     switch (info.ty) {
         case IR_TY_BINARY:
-            if (ir->is_imm) {
-                return format("  %s r%d, %d", info.name, ir->lhs, ir->rhs);
-            }
             return format("  %s r%d, r%d", info.name, ir->lhs, ir->rhs);
         case IR_TY_LABEL:
             return format(".L%d:", ir->lhs);

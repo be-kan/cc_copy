@@ -12,12 +12,6 @@ static IR *add(int op, int lhs, int rhs) {
     return ir;
 }
 
-static IR *add_imm(int op, int lhs, int rhs) {
-    IR *ir = add(op, lhs, rhs);
-    ir->is_imm = true;
-    return ir;
-}
-
 static void kill(int r) {
     add(IR_KILL, r, -1);
 }
@@ -42,13 +36,20 @@ static void store(Node *node, int dst, int src) {
     ir->size = node->ty->size;
 }
 
+static void gen_imm(int op, int r, int imm) {
+    int r2 = nreg++;
+    add(IR_IMM, r2, imm);
+    add(op, r, r2);
+    kill(r2);
+}
+
 static int gen_lval(Node *node) {
     if (node->op == ND_DEREF) {
         return gen_expr(node->expr);
     }
     if (node->op == ND_DOT) {
         int r = gen_lval(node->expr);
-        add_imm(IR_ADD, r, node->ty->offset);
+        gen_imm(IR_ADD, r, node->ty->offset);
         return r;
     }
 
@@ -85,7 +86,7 @@ static int gen_pre_inc(Node *node, int num) {
     int addr = gen_lval(node->expr);
     int val = nreg++;
     load(node, val, addr);
-    add_imm(IR_ADD, val, num * get_inc_scale(node));
+    gen_imm(IR_ADD, val, num * get_inc_scale(node));
     store(node, addr, val);
     kill(addr);
     return val;
@@ -93,7 +94,7 @@ static int gen_pre_inc(Node *node, int num) {
 
 static int gen_post_inc(Node *node, int num) {
     int val = gen_pre_inc(node, num);
-    add_imm(IR_SUB, val, num * get_inc_scale(node));
+    gen_imm(IR_SUB, val, num * get_inc_scale(node));
     return val;
 }
 
@@ -263,7 +264,7 @@ static int gen_expr(Node *node) {
             return gen_binop(IR_SHR, node);
         case '~': {
             int r = gen_expr(node->expr);
-            add_imm(IR_XOR, r, -1);
+            gen_imm(IR_XOR, r, -1);
             return r;
         }
         case ND_POST_INC:

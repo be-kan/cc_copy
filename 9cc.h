@@ -292,7 +292,6 @@ typedef struct {
     int lhs;
     int rhs;
     int size;
-    bool is_imm;
     char *name;
     int nargs;
     int args[6];
