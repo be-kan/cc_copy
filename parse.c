@@ -113,7 +113,7 @@ static bool is_typename() {
            t->ty == TK_STRUCT || t->ty == TK_TYPEOF || t->ty == TK_BOOL;
 }
 
-static Node *declaration(bool define);
+static Node *declaration_type();
 
 static void add_members(Type *ty, Vector *members) {
     int off = 0;
@@ -172,7 +172,7 @@ static Type *decl_specifiers() {
         if (consume('{')) {
             members = new_vec();
             while (!consume('}')) {
-                vec_push(members, declaration(false));
+                vec_push(members, declaration_type());
             }
         }
         if (!tag && !members) {
@@ -600,14 +600,30 @@ static Node *declarator(Type *ty) {
     return direct_decl(ty);
 }
 
-static Node *declaration(bool define) {
+static Node *declaration_type() {
     Type *ty = decl_specifiers();
     Node *node = declarator(ty);
     expect(';');
-    if (define) {
-        node->var = add_lvar(node->ty, node->name);
-    }
     return node;
+}
+
+static Node *declaration() {
+    Type *ty = decl_specifiers();
+    Node *node = declarator(ty);
+    expect(';');
+    Var *var = add_lvar(node->ty, node->name);
+    if (!node->init) {
+        return &null_stmt;
+    }
+
+    Token *t = node->token;
+    Node *lhs = new_node(ND_VARREF, t);
+    lhs->ty = var->ty;
+    lhs->var = var;
+    Node *rhs = node->init;
+    node->init = NULL;
+    Node *expr = new_binop('=', t, lhs, rhs);
+    return new_expr(ND_EXPR_STMT, t, expr);
 }
 
 static Node *param_declaration() {
@@ -632,7 +648,7 @@ static Node *stmt() {
 
     switch (t->ty) {
         case TK_TYPEDEF: {
-            Node *node = declaration(false);
+            Node *node = declaration_type();
             assert(node->name);
             map_put(env->typedefs, node->name, node->ty);
             return &null_stmt;
@@ -656,7 +672,7 @@ static Node *stmt() {
             vec_push(continues, node);
 
             if (is_typename()) {
-                node->init = declaration(true);
+                node->init = declaration();
             } else if (consume(';')) {
                 node->init = &null_stmt;
             } else {
@@ -746,7 +762,7 @@ static Node *stmt() {
         default:
             pos--;
             if (is_typename()) {
-                return declaration(true);
+                return declaration();
             }
             return expr_stmt();
     }
