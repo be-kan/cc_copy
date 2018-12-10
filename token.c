@@ -69,7 +69,7 @@ static void print_line(char *buf, char *path, char *pos) {
         fprintf(stderr, "%.*s\n", linelen, start);
 
         for (int i = 0; i < col; i++) {
-            fprintf(stderr, " ");
+            fprintf(stderr, (start[i] == '\t') ? "\t" : " ");
         }
         fprintf(stderr, "^\n\n");
         return;
