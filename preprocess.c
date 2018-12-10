@@ -54,7 +54,7 @@ static Token *next() {
     return env->input->data[env->pos++];
 }
 
-static bool eof() {
+static bool is_eof() {
     return env->pos == env->input->len;
 }
 
@@ -85,7 +85,7 @@ static bool consume(int ty) {
 
 static Vector *read_until_eol() {
     Vector *v = new_vec();
-    while (!eof()) {
+    while (!is_eof()) {
         Token *t = next();
         if (t->ty == '\n') {
             break;
@@ -174,7 +174,7 @@ static Vector *read_one_arg() {
     Vector *v = new_vec();
     Token *start = peek();
     int level = 0;
-    while (!eof()) {
+    while (!is_eof()) {
         Token *t = peek();
         if (level == 0) {
             if (t->ty == ')' || t->ty == ',') {
@@ -310,7 +310,7 @@ Vector *preprocess(Vector *tokens) {
 
     env = new_env(env, tokens);
 
-    while (!eof()) {
+    while (!is_eof()) {
         Token *t = next();
 
         if (t->ty == TK_IDENT) {
