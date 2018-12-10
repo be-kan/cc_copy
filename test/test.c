@@ -632,6 +632,22 @@ int main() {
         x = y;
         x;
     }));
+    EXPECT(1, ({
+        _Bool x = 0;
+        !x;
+    }));
+    EXPECT(0, ({
+        _Bool x = 1;
+        !x;
+    }));
+    EXPECT(-1, ({
+        _Bool x = 0;
+        ~x;
+    }));
+    EXPECT(-2, ({
+        _Bool x = 1;
+        ~x;
+    }));
 
     printf("OK\n");
     return 0;
