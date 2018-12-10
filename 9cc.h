@@ -145,7 +145,7 @@ enum {
     ND_STRUCT,
     ND_DECL,
     ND_VARDEF,
-    ND_VAR,
+    ND_VARREF,
     ND_CAST,
     ND_IF,
     ND_FOR,

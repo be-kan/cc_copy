@@ -246,7 +246,7 @@ static char *ident() {
 static Node *string_literal(Token *t) {
     Type *ty = ary_of(char_ty(), t->len);
     char *name = format(".L.str%d", nlabel++);
-    Node *node = new_node(ND_VAR, t);
+    Node *node = new_node(ND_VARREF, t);
     node->ty = ty;
     node->var = add_gvar(ty, name, t->str, t->len);
     return node;
@@ -257,7 +257,7 @@ static Node *local_variable(Token *t) {
     if (!var) {
         bad_token(t, "undefined variable");
     }
-    Node *node = new_node(ND_VAR, t);
+    Node *node = new_node(ND_VARREF, t);
     node->ty = var->ty;
     node->name = t->name;
     node->var = var;

@@ -18,7 +18,7 @@ noreturn static void bad_node(Node *node, char *msg) {
 
 static void check_lval(Node *node) {
     int op = node->op;
-    if (op != ND_VAR && op != ND_DEREF && op != ND_DOT) {
+    if (op != ND_VARREF && op != ND_DEREF && op != ND_DOT) {
         bad_node(node, "not an lvalue");
     }
 }
@@ -65,7 +65,7 @@ static Node *do_walk(Node *node, bool decay) {
         case ND_BREAK:
         case ND_CONTINUE:
             return node;
-        case ND_VAR:
+        case ND_VARREF:
             return maybe_decay(node, decay);
         case ND_VARDEF:
             if (node->init) {
