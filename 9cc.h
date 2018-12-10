@@ -46,16 +46,18 @@ void sb_append(StringBuilder *sb, char *s);
 void sb_append_n(StringBuilder *sb, char *s, int len);
 char *sb_get(StringBuilder *sb);
 
+typedef struct Type Type;
+
 typedef struct Type {
     int ty;
     int size;
     int align;
-    struct Type *ptr_to;
-    struct Type *ary_of;
+    Type *ptr_to;
+    Type *ary_of;
     int len;
     Map *members;
     int offset;
-    struct Type *returning;
+    Type *returning;
 } Type;
 
 Type *ptr_to(Type *base);
@@ -189,25 +191,27 @@ typedef struct {
     char *data;
 } Var;
 
+typedef struct Node Node;
+
 typedef struct Node {
     int op;
     Type *ty;
-    struct Node *lhs;
-    struct Node *rhs;
+    Node *lhs;
+    Node *rhs;
     int val;
-    struct Node *expr;
+    Node *expr;
     Vector *stmts;
     char *name;
     Var *var;
-    struct Node *cond;
-    struct Node *then;
-    struct Node *els;
-    struct Node *init;
-    struct Node *inc;
-    struct Node *body;
+    Node *cond;
+    Node *then;
+    Node *els;
+    Node *init;
+    Node *inc;
+    Node *body;
     int break_label;
     int continue_label;
-    struct Node *target;
+    Node *target;
     Vector *params;
     Vector *args;
     Token *token;
