@@ -47,6 +47,10 @@ static Env *new_env(Env *next, char *path, char *buf) {
     return env;
 }
 
+static bool startswith(char *s1, char *s2) {
+    return !strncmp(s1, s2, strlen(s2));
+}
+
 static void print_line(char *buf, char *path, char *pos) {
     char *start = buf;
     int line = 0;
@@ -104,11 +108,22 @@ int get_line_number(Token *t) {
     return n;
 }
 
+static bool need_space(Token *t) {
+    char *s = t->start;
+    if (isspace(s[-1])) {
+        return true;
+    }
+    return t->buf <= s - 2 && startswith(s - 2, "*/");
+}
+
 char *stringize(Vector *tokens) {
     StringBuilder *sb = new_sb();
     for (int i = 0; i < tokens->len; i++) {
         Token *t = tokens->data[i];
-        if (i) {
+        if (t->ty == '\n') {
+            continue;
+        }
+        if (i > 0 && need_space(t)) {
             sb_add(sb, ' ');
         }
         assert(t->start && t->end);
@@ -167,10 +182,6 @@ static Map *keyword_map() {
     map_puti(map, "void", TK_VOID);
     map_puti(map, "while", TK_WHILE);
     return map;
-}
-
-static bool startswith(char *s1, char *s2) {
-    return !strncmp(s1, s2, strlen(s2));
 }
 
 static char *block_comment(char *pos) {
