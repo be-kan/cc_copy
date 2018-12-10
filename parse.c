@@ -667,9 +667,7 @@ static Node *stmt() {
 
             if (is_typename()) {
                 node->init = declaration();
-            } else if (consume(';')) {
-                node->init = &null_stmt;
-            } else {
+            } else if (!consume(';')) {
                 node->init = expr_stmt();
             }
             if (!consume(';')) {
@@ -677,7 +675,7 @@ static Node *stmt() {
                 expect(';');
             }
             if (!consume(')')) {
-                node->inc = new_expr(ND_EXPR_STMT, t, expr());
+                node->inc = expr();
                 expect(')');
             }
             node->body = stmt();
@@ -692,8 +690,6 @@ static Node *stmt() {
             vec_push(breaks, node);
             vec_push(continues, node);
 
-            node->init = &null_stmt;
-            node->inc = &null_stmt;
             expect('(');
             node->cond = expr();
             expect(')');
