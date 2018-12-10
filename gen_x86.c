@@ -99,7 +99,7 @@ void emit_code(Function *fn) {
                 emit("mov %s, %d", regs[lhs], rhs);
                 break;
             case IR_BPREL:
-                emit("lea %s, [rbp-%d]", regs[lhs], rhs);
+                emit("lea %s, [rbp%d]", regs[lhs], rhs);
                 break;
             case IR_MOV:
                 emit("mov %s, %s", regs[lhs], regs[rhs]);
@@ -183,7 +183,7 @@ void emit_code(Function *fn) {
                 emit("mov [%s], %s", regs[lhs], reg(rhs, ir->size));
                 break;
             case IR_STORE_ARG:
-                emit("mov [rbp-%d], %s", lhs, argreg(rhs, ir->size));
+                emit("mov [rbp%d], %s", lhs, argreg(rhs, ir->size));
                 break;
             case IR_ADD:
                 if (ir->is_imm) {
