@@ -32,6 +32,15 @@ static Node *scale_ptr(int op, Node *base, Type *ty) {
     return node;
 }
 
+static Node *cast(Node *base, Type *ty) {
+    Node *node = calloc(1, sizeof(Node));
+    node->op = ND_CAST;
+    node->ty = ty;
+    node->expr = base;
+    node->token = base->token;
+    return node;
+}
+
 static void check_int(Node *node) {
     if (node->ty->ty != INT && node->ty->ty != CHAR) {
         bad_node(node, "not an integer");
@@ -44,7 +53,7 @@ static Node *walk(Node *node) {
     return do_walk(node, true);
 }
 
-static Node *walk_noconv(Node *node) {
+static Node *walk_nodecay(Node *node) {
     return do_walk(node, false);
 }
 
@@ -118,7 +127,7 @@ static Node *do_walk(Node *node, bool decay) {
         }
         case ND_ADD_EQ:
         case ND_SUB_EQ:
-            node->lhs = walk_noconv(node->lhs);
+            node->lhs = walk_nodecay(node->lhs);
             check_lval(node->lhs);
             node->rhs = walk(node->rhs);
             node->ty = node->lhs->ty;
@@ -130,6 +139,14 @@ static Node *do_walk(Node *node, bool decay) {
             }
             return node;
         case '=':
+            node->lhs = walk_nodecay(node->lhs);
+            check_lval(node->lhs);
+            node->rhs = walk(node->rhs);
+            if (node->lhs->ty->ty == BOOL) {
+                node->rhs = cast(node->rhs, bool_ty());
+            }
+            node->ty = node->lhs->ty;
+            return node;
         case ND_MUL_EQ:
         case ND_DIV_EQ:
         case ND_MOD_EQ:
@@ -138,7 +155,7 @@ static Node *do_walk(Node *node, bool decay) {
         case ND_AND_EQ:
         case ND_XOR_EQ:
         case ND_OR_EQ:
-            node->lhs = walk_noconv(node->lhs);
+            node->lhs = walk_nodecay(node->lhs);
             check_lval(node->lhs);
             node->rhs = walk(node->rhs);
             node->ty = node->lhs->ty;
@@ -257,7 +274,7 @@ static Node *do_walk(Node *node, bool decay) {
 }
 
 Type *get_type(Node *node) {
-    return walk_noconv(node)->ty;
+    return walk_nodecay(node)->ty;
 }
 
 void sema(Program *prog) {
