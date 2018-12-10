@@ -140,7 +140,6 @@ extern int nlabel;
 
 enum {
     ND_NUM = 256,
-    ND_STR,
     ND_STRUCT,
     ND_DECL,
     ND_VARDEF,
@@ -162,8 +161,6 @@ enum {
     ND_SHL,
     ND_SHR,
     ND_MOD,
-    ND_POST_INC,
-    ND_POST_DEC,
     ND_RETURN,
     ND_CALL,
     ND_FUNC,
