@@ -803,7 +803,7 @@ static Node *stmt() {
             expect(':');
             node->body = stmt();
 
-            Node *n = switches->data[switches->len - 1];
+            Node *n = vec_last(switches);
             vec_push(n->cases, node);
             return node;
         }
@@ -812,7 +812,7 @@ static Node *stmt() {
                 bad_token(t, "stray break");
             }
             Node *node = new_node(ND_BREAK, t);
-            node->target = breaks->data[breaks->len - 1];
+            node->target = vec_last(breaks);
             return node;
         }
         case TK_CONTINUE: {
@@ -820,7 +820,7 @@ static Node *stmt() {
                 bad_token(t, "stray continue");
             }
             Node *node = new_node(ND_CONTINUE, t);
-            node->target = breaks->data[breaks->len - 1];
+            node->target = vec_last(breaks);
             return node;
         }
         case TK_RETURN: {
