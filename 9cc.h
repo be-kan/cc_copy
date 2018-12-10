@@ -20,6 +20,7 @@ typedef struct {
 
 Vector *new_vec(void);
 void vec_push(Vector *v, void *elem);
+void vec_pushi(Vector *v, int val);
 void *vec_pop(Vector *v);
 void *vec_last(Vector *v);
 
@@ -254,7 +255,7 @@ extern IRInfo irinfo[];
 void dump_ir(Vector *irv);
 
 enum {
-    IR_ADD,
+    IR_ADD = 1,
     IR_SUB,
     IR_MUL,
     IR_DIV,
@@ -281,7 +282,6 @@ enum {
     IR_LOAD,
     IR_STORE,
     IR_STORE_ARG,
-    IR_KILL,
     IR_NOP,
 };
 
@@ -293,6 +293,7 @@ typedef struct {
     char *name;
     int nargs;
     int args[6];
+    Vector *kill;
 } IR;
 
 enum {

@@ -612,10 +612,10 @@ static Type *read_array(Type *ty) {
     Vector *v = new_vec();
     while (consume('[')) {
         if (consume(']')) {
-            vec_push(v, (void *)(intptr_t)-1);
+            vec_pushi(v, -1);
             continue;
         }
-        vec_push(v, (void *)(intptr_t)const_expr());
+        vec_pushi(v, const_expr());
         expect(']');
     }
     for (int i = v->len - 1; i >= 0; i--) {
