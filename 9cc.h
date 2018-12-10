@@ -137,8 +137,8 @@ typedef struct {
 Vector *tokenize(char *path, bool add_eof);
 noreturn void bad_token(Token *t, char *msg);
 void warn_token(Token *t, char *msg);
-char *tokstr(Token *t);
 int get_line_number(Token *t);
+char *stringize(Vector *tokens);
 
 Vector *preprocess(Vector *tokens);
 

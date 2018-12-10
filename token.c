@@ -94,11 +94,6 @@ noreturn static void bad_position(char *p, char *msg) {
     error(msg);
 }
 
-char *tokstr(Token *t) {
-    assert(t->start && t->end);
-    return strndup(t->start, t->end - t->start);
-}
-
 int get_line_number(Token *t) {
     int n = 0;
     for (char *p = t->buf; p < t->end; p++) {
@@ -107,6 +102,19 @@ int get_line_number(Token *t) {
         }
     }
     return n;
+}
+
+char *stringize(Vector *tokens) {
+    StringBuilder *sb = new_sb();
+    for (int i = 0; i < tokens->len; i++) {
+        Token *t = tokens->data[i];
+        if (i) {
+            sb_add(sb, ' ');
+        }
+        assert(t->start && t->end);
+        sb_append_n(sb, t->start, t->end - t->start);
+    }
+    return sb_get(sb);
 }
 
 static Token *add(int ty, char *start) {

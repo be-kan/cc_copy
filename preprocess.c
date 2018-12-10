@@ -205,20 +205,6 @@ static Vector *read_args() {
     return v;
 }
 
-static Token *stringize(Token *tmpl, Vector *tokens) {
-    StringBuilder *sb = new_sb();
-    for (int i = 0; i < tokens->len; i++) {
-        Token *t = tokens->data[i];
-        if (i) {
-            sb_add(sb, ' ');
-        }
-        sb_append(sb, tokstr(t));
-    }
-
-    char *s = sb_get(sb);
-    return new_string(tmpl, s, sb->len);
-}
-
 static bool add_special_macro(Token *t) {
     if (is_ident(t, "__LINE__")) {
         emit(new_int(t, get_line_number(t)));
@@ -252,7 +238,8 @@ static void apply_funclike(Macro *m, Token *start) {
 
         if (t->ty == TK_PARAM) {
             if (t->stringize) {
-                emit(stringize(t, args->data[t->val]));
+                char *s = stringize(args->data[t->val]);
+                emit(new_string(t, s, strlen(s) + 1));
             } else {
                 append(args->data[t->val]);
             }
