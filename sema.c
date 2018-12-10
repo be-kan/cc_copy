@@ -1,6 +1,7 @@
 #include "9cc.h"
 
 static Type int_ty = {INT, 4, 4};
+static Type void_ty = {VOID, 0, 0};
 
 static void swap(Node **p, Node **q) {
     Node *r = *p;
@@ -233,10 +234,17 @@ static Node *do_walk(Node *node, bool decay) {
             }
             return node;
         }
-        case ND_STMT_EXPR:
+        case ND_STMT_EXPR: {
             node->body = walk(node->body);
-            node->ty = &int_ty;
+            Vector *stmts = node->body->stmts;
+            if (stmts->len > 0) {
+                Node *last = stmts->data[stmts->len - 1];
+                node->ty = last->ty;
+            } else {
+                node->ty = &void_ty;
+            }
             return node;
+        }
         default:
             assert(0 && "unknown node type");
     }
