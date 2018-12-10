@@ -50,7 +50,6 @@ typedef struct Type {
     int ty;
     int size;
     int align;
-    bool is_extern;
     struct Type *ptr_to;
     struct Type *ary_of;
     int len;
