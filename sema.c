@@ -94,8 +94,11 @@ static Node *do_walk(Node *node, bool decay) {
             check_int(node->rhs);
             if (node->lhs->ty->ty == PTR) {
                 node->rhs = scale_ptr('*', node->rhs, node->lhs->ty);
+                node->ty = node->lhs->ty;
+            } else {
+                node->ty = int_ty();
             }
-            node->ty = node->lhs->ty;
+
             return node;
         case '-': {
             node->lhs = walk(node->lhs);
