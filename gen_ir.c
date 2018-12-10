@@ -60,15 +60,14 @@ static int gen_lval(Node *node) {
     assert(node->op == ND_VAR);
     Var *var = node->var;
 
+    int r = nreg++;
     if (var->is_local) {
-        int r = nreg++;
         add(IR_BPREL, r, var->offset);
-        return r;
+    } else {
+        IR *ir = add(IR_LABEL_ADDR, r, -1);
+        ir->name = var->name;
     }
 
-    int r = nreg++;
-    IR *ir = add(IR_LABEL_ADDR, r, -1);
-    ir->name = var->name;
     return r;
 }
 
