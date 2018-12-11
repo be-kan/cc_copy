@@ -277,15 +277,16 @@ enum {
     IR_NOP,
 };
 
-typedef struct BB {
-    int label;
-    Vector *ir;
-} BB;
-
 typedef struct {
     int vn;
     int rn;
 } Reg;
+
+typedef struct BB {
+    int label;
+    Vector *ir;
+    Reg *param;
+} BB;
 
 typedef struct {
     int op;
@@ -302,6 +303,7 @@ typedef struct {
     int nargs;
     Reg *args[6];
     Vector *kill;
+    Reg *bbarg;
 } IR;
 
 void gen_ir(Program *prog);

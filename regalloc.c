@@ -6,10 +6,13 @@ static void three_to_two(BB *bb) {
     Vector *v = new_vec();
     for (int i = 0; i < bb->ir->len; i++) {
         IR *ir = bb->ir->data[i];
-        if (!ir->r0 || !ir->r1 || ir->r0 == ir->r1) {
+        if (!ir->r0 || !ir->r1) {
             vec_push(v, ir);
             continue;
         }
+
+        assert(ir->r0 != ir->r1);
+
         IR *ir2 = calloc(1, sizeof(IR));
         ir2->op = IR_MOV;
         ir2->kill = new_vec();
@@ -41,6 +44,7 @@ static void visit(IR *ir) {
     alloc(ir->r0);
     alloc(ir->r1);
     alloc(ir->r2);
+    alloc(ir->bbarg);
 
     if (ir->op == IR_CALL) {
         for (int i = 0; i < ir->nargs; i++) {
@@ -60,9 +64,11 @@ void alloc_regs(Program *prog) {
 
     for (int i = 0; i < prog->funcs->len; i++) {
         Function *fn = prog->funcs->data[i];
+
         for (int i = 0; i < fn->bbs->len; i++) {
             BB *bb = fn->bbs->data[i];
             three_to_two(bb);
+            alloc(bb->param);
 
             for (int i = 0; i < bb->ir->len; i++) {
                 IR *ir = bb->ir->data[i];
