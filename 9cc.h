@@ -280,6 +280,7 @@ enum {
 typedef struct {
     int vn;
     int rn;
+    bool marked;
 } Reg;
 
 typedef struct BB {
