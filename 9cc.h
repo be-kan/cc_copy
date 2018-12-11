@@ -198,6 +198,7 @@ typedef struct {
 } Var;
 
 typedef struct Node Node;
+typedef struct BB BB;
 
 typedef struct Node {
     int op;
@@ -216,10 +217,10 @@ typedef struct Node {
     Node *inc;
     Node *body;
     Vector *cases;
-    int case_label;
-    int break_label;
-    int continue_label;
+    BB *bb;
     Node *target;
+    BB *break_;
+    BB *continue_;
     Vector *params;
     Vector *args;
     Token *token;
@@ -229,7 +230,7 @@ typedef struct {
     char *name;
     Node *node;
     Vector *lvars;
-    Vector *ir;
+    Vector *bbs;
     int stacksize;
 } Function;
 
@@ -277,18 +278,24 @@ enum {
     IR_SHR,
     IR_MOD,
     IR_JMP,
-    IR_IF,
-    IR_UNLESS,
+    IR_BR,
     IR_LOAD,
     IR_STORE,
     IR_STORE_ARG,
     IR_NOP,
 };
 
+typedef struct BB {
+    int label;
+    Vector *ir;
+} BB;
+
 typedef struct {
     int op;
     int lhs;
     int rhs;
+    BB *bb1;
+    BB *bb2;
     int size;
     char *name;
     int nargs;
@@ -309,6 +316,7 @@ enum {
     IR_TY_REG_IMM,
     IR_TY_STORE_ARG,
     IR_TY_REG_LABEL,
+    IR_TY_BR,
     IR_TY_CALL,
 };
 
