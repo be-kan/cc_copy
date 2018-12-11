@@ -31,29 +31,16 @@ static void kill(int r) {
 }
 
 static void visit(IR *ir) {
-    switch (irinfo[ir->op].ty) {
-        case IR_TY_BINARY:
-            ir->lhs = alloc(ir->lhs);
-            ir->rhs = alloc(ir->rhs);
-            break;
-        case IR_TY_REG:
-        case IR_TY_REG_IMM:
-        case IR_TY_REG_LABEL:
-        case IR_TY_LABEL_ADDR:
-        case IR_TY_BR:
-            ir->lhs = alloc(ir->lhs);
-            break;
-        case IR_TY_MEM:
-        case IR_TY_REG_REG:
-            ir->lhs = alloc(ir->lhs);
-            ir->rhs = alloc(ir->rhs);
-            break;
-        case IR_TY_CALL:
-            ir->lhs = alloc(ir->lhs);
-            for (int i = 0; i < ir->nargs; i++) {
-                ir->args[i] = alloc(ir->args[i]);
-            }
-            break;
+    if (ir->lhs) {
+        ir->lhs = alloc(ir->lhs);
+    }
+    if (ir->rhs) {
+        ir->rhs = alloc(ir->rhs);
+    }
+    if (ir->op == IR_CALL) {
+        for (int i = 0; i < ir->nargs; i++) {
+            ir->args[i] = alloc(ir->args[i]);
+        }
     }
 
     for (int i = 0; i < ir->kill->len; i++) {
