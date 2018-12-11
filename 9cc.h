@@ -284,8 +284,8 @@ typedef struct BB {
 
 typedef struct {
     int op;
-    int lhs;
-    int rhs;
+    int r0;
+    int r2;
     int imm;
     int imm2;
     int label;
