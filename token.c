@@ -110,7 +110,7 @@ int get_line_number(Token *t) {
 
 static bool need_space(Token *t) {
     char *s = t->start;
-    if (isspace(s[-1])) {
+    if (t->buf <= s - 1 && isspace(s[-1])) {
         return true;
     }
     return t->buf <= s - 2 && startswith(s - 2, "*/");
