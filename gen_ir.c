@@ -8,6 +8,11 @@ static BB *new_bb() {
     BB *bb = calloc(1, sizeof(BB));
     bb->label = nlabel++;
     bb->ir = new_vec();
+    bb->succ = new_vec();
+    bb->pred = new_vec();
+    bb->def_regs = new_vec();
+    bb->in_regs = new_vec();
+    bb->out_regs = new_vec();
     vec_push(fn->bbs, bb);
     return bb;
 }
@@ -19,7 +24,7 @@ static IR *new_ir(int op) {
     return ir;
 }
 
-static Reg *new_reg() {
+Reg *new_reg() {
     Reg *r = calloc(1, sizeof(Reg));
     r->vn = nreg++;
     r->rn = -1;
@@ -405,14 +410,19 @@ static void gen_param(Var *var, int i) {
     ir->var = var;
     ir->imm = i;
     ir->size = var->ty->size;
+    var->address_taken = true;
 }
 
 void gen_ir(Program *prog) {
     for (int i = 0; i < prog->funcs->len; i++) {
         fn = prog->funcs->data[i];
-        out = new_bb();
 
         assert(fn->node->op == ND_FUNC);
+
+        out = new_bb();
+        BB *bb = new_bb();
+        jmp(bb);
+        out = bb;
 
         Vector *params = fn->node->params;
         for (int i = 0; i < params->len; i++) {
@@ -420,6 +430,8 @@ void gen_ir(Program *prog) {
         }
 
         gen_stmt(fn->node->body);
+
+        new_ir(IR_RETURN)->r2 = imm(0);
 
         fn->node = NULL;
     }

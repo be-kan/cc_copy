@@ -23,6 +23,8 @@ void vec_push(Vector *v, void *elem);
 void vec_pushi(Vector *v, int val);
 void *vec_pop(Vector *v);
 void *vec_last(Vector *v);
+bool vec_contains(Vector *v, void *elem);
+bool vec_union1(Vector *v, void *elem);
 
 typedef struct {
     Vector *keys;
@@ -189,12 +191,16 @@ enum {
     FUNC,
 };
 
+typedef struct Reg Reg;
+
 typedef struct {
     Type *ty;
     char *name;
     bool is_local;
     int offset;
     char *data;
+    bool address_taken;
+    Reg *promoted;
 } Var;
 
 typedef struct Node Node;
@@ -271,21 +277,32 @@ enum {
     IR_JMP,
     IR_BR,
     IR_LOAD,
+    IR_LOAD_SPILL,
     IR_STORE,
     IR_STORE_ARG,
+    IR_STORE_SPILL,
     IR_NOP,
 };
 
-typedef struct {
+typedef struct Reg {
     int vn;
     int rn;
-    bool marked;
+    Reg *promoted;
+    int def;
+    int last_use;
+    bool spill;
+    Var *var;
 } Reg;
 
 typedef struct BB {
     int label;
     Vector *ir;
     Reg *param;
+    Vector *succ;
+    Vector *pred;
+    Vector *def_regs;
+    Vector *in_regs;
+    Vector *out_regs;
 } BB;
 
 typedef struct {
@@ -307,6 +324,9 @@ typedef struct {
 } IR;
 
 void gen_ir(Program *prog);
+Reg *new_reg();
+void optimize(Program *prog);
+void liveness(Program *prog);
 
 void alloc_regs(Program *prog);
 

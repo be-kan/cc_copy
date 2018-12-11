@@ -40,7 +40,10 @@ int main(int argc, char **argv) {
         dump_ir(prog->funcs);
     }
 
+    optimize(prog);
+    liveness(prog);
     alloc_regs(prog);
+
     if (dump_ir2) {
         dump_ir(prog->funcs);
     }

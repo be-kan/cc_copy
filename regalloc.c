@@ -1,7 +1,5 @@
 #include "9cc.h"
 
-static bool *used;
-
 static void three_to_two(BB *bb) {
     Vector *v = new_vec();
     for (int i = 0; i < bb->ir->len; i++) {
@@ -25,70 +23,125 @@ static void three_to_two(BB *bb) {
     bb->ir = v;
 }
 
-static void mark(IR *ir, Reg *r) {
-    if (!r || r->marked) {
-        return;
+static void set_last_use(Reg *r, int ic) {
+    if (r && r->last_use < ic) {
+        r->last_use = ic;
     }
-    if (!ir->kill) {
-        ir->kill = new_vec();
-    }
-    r->marked = true;
-    vec_push(ir->kill, r);
 }
 
-static void mark_last_use(IR *ir) {
-    mark(ir, ir->r0);
-    mark(ir, ir->r1);
-    mark(ir, ir->r2);
-    mark(ir, ir->bbarg);
-    if (ir->op == IR_CALL) {
-        for (int i = 0; i < ir->nargs; i++) {
-            mark(ir, ir->args[i]);
+static Vector *collect_regs(Function *fn) {
+    Vector *v = new_vec();
+    int ic = 1; // instruction counter
+    for (int i = 0; i < fn->bbs->len; i++) {
+        BB *bb = fn->bbs->data[i];
+        if (bb->param) {
+            bb->param->def = ic;
+            vec_push(v, bb->param);
+        }
+
+        for (int i = 0; i < bb->ir->len; i++, ic++) {
+            IR *ir = bb->ir->data[i];
+            if (ir->r0 && !ir->r0->def) {
+                ir->r0->def = ic;
+                vec_push(v, ir->r0);
+            }
+            set_last_use(ir->r1, ic);
+            set_last_use(ir->r2, ic);
+            set_last_use(ir->bbarg, ic);
+            if (ir->op == IR_CALL) {
+                for (int i = 0; i < ir->nargs; i++) {
+                    set_last_use(ir->args[i], ic);
+                }
+            }
+        }
+
+        for (int i = 0; i < bb->out_regs->len; i++) {
+            Reg *r = bb->out_regs->data[i];
+            set_last_use(r, ic);
         }
     }
+    return v;
 }
 
-static void alloc(Reg *r) {
-    if (!r || r->rn != -1) {
-        return;
-    }
-
-    for (int i = 0; i < num_regs; i++) {
-        if (used[i]) continue;
-        used[i] = true;
-        r->rn = i;
-        return;
-    }
-
-    error("register exhausted");
-}
-
-static void regalloc(IR *ir) {
-    alloc(ir->r0);
-    alloc(ir->r1);
-    alloc(ir->r2);
-    alloc(ir->bbarg);
-
-    if (ir->op == IR_CALL) {
-        for (int i = 0; i < ir->nargs; i++) {
-            alloc(ir->args[i]);
+static int choose_to_spill(Reg **used) {
+    int k = 0;
+    for (int i = 1; i < num_regs; i++) {
+        if (used[k]->last_use < used[i]->last_use) {
+            k = i;
         }
     }
+    return k;
+}
 
-    if (!ir->kill) {
+static void scan(Vector *regs) {
+    Reg **used = calloc(num_regs, sizeof(Reg *));
+    for (int i = 0; i < regs->len; i++) {
+        Reg *r = regs->data[i];
+        bool found = false;
+
+        for (int i = 0; i < num_regs - 1; i++) {
+            if (used[i] && r->def < used[i]->last_use) {
+                continue;
+            }
+            r->rn = i;
+            used[i] = r;
+            found = true;
+            break;
+        }
+
+        if (found) {
+            continue;
+        }
+
+        used[num_regs - 1] = r;
+        int k = choose_to_spill(used);
+        r->rn = k;
+        used[k]->rn = num_regs - 1;
+        used[k]->spill = true;
+        used[k] = r;
+    }
+}
+
+static void spill_store(Vector *v, IR *ir) {
+    Reg *r = ir->r0;
+    if (!r || !r->spill) {
         return;
     }
 
-    for (int i = 0; i < ir->kill->len; i++) {
-        Reg *r = ir->kill->data[i];
-        assert(r->rn != -1);
-        used[r->rn] = false;
-    }
+    IR *ir2 = calloc(1, sizeof(IR));
+    ir2->op = IR_STORE_SPILL;
+    ir2->r1 = r;
+    ir2->var = r->var;
+    vec_push(v, ir2);
 }
+
+static void spill_load(Vector *v, IR *ir, Reg *r) {
+    if (!r || !r->spill) {
+        return;
+    }
+
+    IR *ir2 = calloc(1, sizeof(IR));
+    ir2->op = IR_LOAD_SPILL;
+    ir2->r0 = r;
+    ir2->var = r->var;
+    vec_push(v, ir2);
+}
+
+static void emit_spill_code(BB *bb) {
+    Vector *v = new_vec();
+    for (int i = 0; i < bb->ir->len; i++) {
+        IR *ir = bb->ir->data[i];
+        spill_load(v, ir, ir->r1);
+        spill_load(v, ir, ir->r2);
+        spill_load(v, ir, ir->bbarg);
+        vec_push(v, ir);
+        spill_store(v, ir);
+    }
+    bb->ir = v;
+}
+
 
 void alloc_regs(Program *prog) {
-    used = calloc(1, num_regs);
-
     for (int i = 0; i < prog->funcs->len; i++) {
         Function *fn = prog->funcs->data[i];
         for (int i = 0; i < fn->bbs->len; i++) {
@@ -96,21 +149,24 @@ void alloc_regs(Program *prog) {
             three_to_two(bb);
         }
 
-        for (int i = fn->bbs->len - 1; i >= 0; i--) {
-            BB *bb = fn->bbs->data[i];
-            for (int i = bb->ir->len - 1; i >= 0; i--) {
-                IR *ir = bb->ir->data[i];
-                mark_last_use(ir);
-            }
+        Vector *regs = collect_regs(fn);
+        scan(regs);
+
+        for (int i = 0; i < regs->len; i++) {
+            Reg *r = regs->data[i];
+            if (!r->spill)
+                continue;
+            Var *var = calloc(1, sizeof(Var));
+            var->ty = ptr_to(int_ty());
+            var->is_local = true;
+            var->name = "spill";
+            r->var = var;
+            vec_push(fn->lvars, var);
         }
 
         for (int i = 0; i < fn->bbs->len; i++) {
             BB *bb = fn->bbs->data[i];
-            alloc(bb->param);
-            for (int i = 0; i < bb->ir->len; i++) {
-                IR *ir = bb->ir->data[i];
-                regalloc(ir);
-            }
+            emit_spill_code(bb);
         }
     }
 }
