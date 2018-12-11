@@ -290,6 +290,7 @@ typedef struct {
 typedef struct {
     int op;
     Reg *r0;
+    Reg *r1;
     Reg *r2;
     int imm;
     int imm2;
