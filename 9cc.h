@@ -231,7 +231,6 @@ typedef struct {
     Node *node;
     Vector *lvars;
     Vector *bbs;
-    int stacksize;
 } Function;
 
 typedef struct {
@@ -295,8 +294,8 @@ typedef struct {
     Reg *r1;
     Reg *r2;
     int imm;
-    int imm2;
     int label;
+    Var *var;
     BB *bb1;
     BB *bb2;
     int size;
