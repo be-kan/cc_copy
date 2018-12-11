@@ -4,7 +4,7 @@ typedef struct Env {
     char *path;
     char *buf;
     Vector *tokens;
-    struct Env *next;
+    struct Env *prev;
 } Env;
 
 static Env *env;
@@ -38,12 +38,12 @@ static char *read_file(FILE *fp) {
     return sb_get(sb);
 }
 
-static Env *new_env(Env *next, char *path, char *buf) {
+static Env *new_env(Env *prev, char *path, char *buf) {
     Env *env = calloc(1, sizeof(Env));
     env->path = strcmp(path, "-") ? path : "(stdin)";
     env->buf = buf;
     env->tokens = new_vec();
-    env->next = next;
+    env->prev = prev;
     return env;
 }
 
@@ -487,7 +487,7 @@ Vector *tokenize(char *path, bool add_eof) {
     }
 
     Vector *v = env->tokens;
-    env = env->next;
+    env = env->prev;
 
     v = preprocess(v);
     v = strip_newline_tokens(v);

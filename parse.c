@@ -6,7 +6,7 @@ typedef struct Env {
     Map *vars;
     Map *typedefs;
     Map *tags;
-    struct Env *next;
+    struct Env *prev;
 } Env;
 
 static Program *prog;
@@ -20,17 +20,17 @@ static int pos;
 struct Env *env;
 static Node null_stmt = {ND_NULL};
 
-static Env *new_env(Env *next) {
+static Env *new_env(Env *prev) {
     Env *env = calloc(1, sizeof(Env));
     env->vars = new_map();
     env->typedefs = new_map();
     env->tags = new_map();
-    env->next = next;
+    env->prev = prev;
     return env;
 }
 
 static Var *find_var(char *name) {
-    for (Env *e = env; e; e = e->next) {
+    for (Env *e = env; e; e = e->prev) {
         Var *var = map_get(e->vars, name);
         if (var) {
             return var;
@@ -40,7 +40,7 @@ static Var *find_var(char *name) {
 }
 
 static Type *find_typedef(char *name) {
-    for (Env *e = env; e; e = e->next) {
+    for (Env *e = env; e; e = e->prev) {
         Type *ty = map_get(e->typedefs, name);
         if (ty) {
             return ty;
@@ -50,7 +50,7 @@ static Type *find_typedef(char *name) {
 }
 
 static Type *find_tag(char *name) {
-    for (Env *e = env; e; e = e->next) {
+    for (Env *e = env; e; e = e->prev) {
         Type *ty = map_get(e->tags, name);
         if (ty) {
             return ty;
@@ -296,7 +296,7 @@ static Node *stmt_expr() {
         vec_push(v, stmt());
     } while (!consume('}'));
     expect(')');
-    env = env->next;
+    env = env->prev;
 
     Node *last = vec_pop(v);
     if (last->op != ND_EXPR_STMT) {
@@ -737,7 +737,7 @@ static Node *stmt() {
 
             vec_pop(breaks);
             vec_pop(continues);
-            env = env->next;
+            env = env->prev;
             return node;
         }
         case TK_WHILE: {
@@ -842,7 +842,7 @@ static Node *compound_stmt() {
     while (!consume('}')) {
         vec_push(node->stmts, stmt());
     }
-    env = env->next;
+    env = env->prev;
     return node;
 }
 
