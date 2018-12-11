@@ -20,14 +20,21 @@ static IR *new_ir(int op) {
     return ir;
 }
 
-static IR *emit(int op, int r0, int r2) {
+static Reg *new_reg() {
+    Reg *r = calloc(1, sizeof(Reg));
+    r->vn = nreg++;
+    r->rn = -1;
+    return r;
+}
+
+static IR *emit(int op, Reg *r0, Reg *r2) {
     IR *ir = new_ir(op);
     ir->r0 = r0;
     ir->r2 = r2;
     return ir;
 }
 
-static IR *br(int r, BB *then, BB *els) {
+static IR *br(Reg *r, BB *then, BB *els) {
     IR *ir = new_ir(IR_BR);
     ir->r0 = r;
     ir->bb1 = then;
@@ -35,9 +42,9 @@ static IR *br(int r, BB *then, BB *els) {
     return ir;
 }
 
-static void kill(int r) {
+static void kill(Reg *r) {
     IR *ir = vec_last(out->ir);
-    vec_pushi(ir->kill, r);
+    vec_push(ir->kill, r);
 }
 
 static void jmp(BB *bb) {
@@ -45,31 +52,31 @@ static void jmp(BB *bb) {
     ir->bb1 = bb;
 }
 
-static void imm(int r, int imm) {
+static void imm(Reg *r, int imm) {
     IR *ir = new_ir(IR_IMM);
     ir->r0 = r;
     ir->imm = imm;
 }
 
-static int gen_expr(Node *node);
+static Reg *gen_expr(Node *node);
 
-static void load(Node *node, int dst, int src) {
+static void load(Node *node, Reg *dst, Reg *src) {
     IR *ir = emit(IR_LOAD, dst, src);
     ir->size = node->ty->size;
 }
 
-static void store(Node *node, int dst, int src) {
+static void store(Node *node, Reg *dst, Reg *src) {
     IR *ir = emit(IR_STORE, dst, src);
     ir->size = node->ty->size;
 }
 
-static int gen_lval(Node *node) {
+static Reg *gen_lval(Node *node) {
     if (node->op == ND_DEREF) {
         return gen_expr(node->expr);
     }
     if (node->op == ND_DOT) {
-        int r = gen_lval(node->expr);
-        int r2 = nreg++;
+        Reg *r = gen_lval(node->expr);
+        Reg *r2 = new_reg();
         imm(r2, node->ty->offset);
         emit(IR_ADD, r, r2);
         kill(r2);
@@ -79,33 +86,33 @@ static int gen_lval(Node *node) {
     assert(node->op == ND_VARREF);
     Var *var = node->var;
 
-    int r = nreg++;
+    Reg *r = new_reg();
     if (var->is_local) {
         IR *ir = new_ir(IR_BPREL);
         ir->r0 = r;
         ir->imm = var->offset;
     } else {
-        IR *ir = emit(IR_LABEL_ADDR, r, -1);
+        IR *ir = emit(IR_LABEL_ADDR, r, NULL);
         ir->name = var->name;
     }
 
     return r;
 }
 
-static int gen_binop(int ty, Node *node) {
-    int lhs = gen_expr(node->lhs);
-    int rhs = gen_expr(node->rhs);
-    emit(ty, lhs, rhs);
+static Reg *gen_binop(int op, Node *node) {
+    Reg *lhs = gen_expr(node->lhs);
+    Reg *rhs = gen_expr(node->rhs);
+    emit(op, lhs, rhs);
     kill(rhs);
     return lhs;
 }
 
 static void gen_stmt(Node *node);
 
-static int gen_expr(Node *node) {
+static Reg *gen_expr(Node *node) {
     switch (node->op) {
         case ND_NUM: {
-            int r = nreg++;
+            Reg *r = new_reg();
             imm(r, node->val);
             return r;
         }
@@ -118,11 +125,11 @@ static int gen_expr(Node *node) {
             BB *bb2 = new_bb();
             BB *last = new_bb();
 
-            int r = gen_expr(node->lhs);
+            Reg *r = gen_expr(node->lhs);
             br(r, bb1, last);
 
             out = bb1;
-            int r2 = gen_expr(node->rhs);
+            Reg *r2 = gen_expr(node->rhs);
             emit(IR_MOV, r, r2);
             kill(r2);
             br(r, bb2, last);
@@ -140,7 +147,7 @@ static int gen_expr(Node *node) {
             BB *set1 = new_bb();
             BB *last = new_bb();
 
-            int r = gen_expr(node->lhs);
+            Reg *r = gen_expr(node->lhs);
             br(r, set1, bb);
 
             out = set0;
@@ -152,7 +159,7 @@ static int gen_expr(Node *node) {
             jmp(last);
 
             out = bb;
-            int r2 = gen_expr(node->rhs);
+            Reg *r2 = gen_expr(node->rhs);
             emit(IR_MOV, r, r2);
             kill(r2);
             br(r, set1, set0);
@@ -162,17 +169,17 @@ static int gen_expr(Node *node) {
         }
         case ND_VARREF:
         case ND_DOT: {
-            int r = gen_lval(node);
+            Reg *r = gen_lval(node);
             load(node, r, r);
             return r;
         }
         case ND_CALL: {
-            int args[6];
+            Reg *args[6];
             for (int i = 0; i < node->args->len; i++) {
                 args[i] = gen_expr(node->args->data[i]);
             }
-            int r = nreg++;
-            IR *ir = emit(IR_CALL, r, -1);
+            Reg *r = new_reg();
+            IR *ir = emit(IR_CALL, r, NULL);
             ir->name = node->name;
             ir->nargs = node->args->len;
             memcpy(ir->args, args, sizeof(args));
@@ -184,16 +191,16 @@ static int gen_expr(Node *node) {
         case ND_ADDR:
             return gen_lval(node->expr);
         case ND_DEREF: {
-            int r = gen_expr(node->expr);
+            Reg *r = gen_expr(node->expr);
             load(node, r, r);
             return r;
         }
         case ND_CAST: {
-            int r = gen_expr(node->expr);
+            Reg *r = gen_expr(node->expr);
             if (node->ty->ty != BOOL) {
                 return r;
             }
-            int r2 = nreg++;
+            Reg *r2 = new_reg();
             imm(r2, 0);
             emit(IR_NE, r, r2);
             kill(r2);
@@ -205,8 +212,8 @@ static int gen_expr(Node *node) {
             }
             return gen_expr(node->expr);
         case '=': {
-            int rhs = gen_expr(node->rhs);
-            int lhs = gen_lval(node->lhs);
+            Reg *rhs = gen_expr(node->rhs);
+            Reg *lhs = gen_lval(node->lhs);
             store(node, lhs, rhs);
             kill(lhs);
             return rhs;
@@ -236,8 +243,8 @@ static int gen_expr(Node *node) {
         case ND_SHR:
             return gen_binop(IR_SHR, node);
         case '~': {
-            int r = gen_expr(node->expr);
-            int r2 = nreg++;
+            Reg *r = gen_expr(node->expr);
+            Reg *r2 = new_reg();
             imm(r2, -1);
             emit(IR_XOR, r, r2);
             kill(r2);
@@ -251,17 +258,17 @@ static int gen_expr(Node *node) {
             BB *els = new_bb();
             BB *last = new_bb();
 
-            int r = gen_expr(node->cond);
+            Reg *r = gen_expr(node->cond);
             br(r, then, els);
 
             out = then;
-            int r2 = gen_expr(node->then);
+            Reg *r2 = gen_expr(node->then);
             emit(IR_MOV, r, r2);
             kill(r2);
             jmp(last);
 
             out = els;
-            int r3 = gen_expr(node->els);
+            Reg *r3 = gen_expr(node->els);
             emit(IR_MOV, r, r3);
             kill(r3); // fix r2 -> r3
             jmp(last);
@@ -270,8 +277,8 @@ static int gen_expr(Node *node) {
             return r;
         }
         case '!': {
-            int lhs = gen_expr(node->expr);
-            int rhs = nreg++;
+            Reg *lhs = gen_expr(node->expr);
+            Reg *rhs = new_reg();
             imm(rhs, 0);
             emit(IR_EQ, lhs, rhs);
             kill(rhs);
@@ -291,7 +298,7 @@ static void gen_stmt(Node *node) {
             BB *els = new_bb();
             BB *last = new_bb();
 
-            int r = gen_expr(node->cond);
+            Reg *r = gen_expr(node->cond);
             br(r, then, els);
             kill(r);
 
@@ -321,7 +328,7 @@ static void gen_stmt(Node *node) {
 
             out = cond;
             if (node->cond) {
-                int r = gen_expr(node->cond);
+                Reg *r = gen_expr(node->cond);
                 br(r, body, node->break_);
                 kill(r);
             } else {
@@ -353,7 +360,7 @@ static void gen_stmt(Node *node) {
             jmp(node->continue_);
 
             out = node->continue_;
-            int r = gen_expr(node->cond);
+            Reg *r = gen_expr(node->cond);
             br(r, body, node->break_);
             kill(r);
 
@@ -364,13 +371,13 @@ static void gen_stmt(Node *node) {
             node->break_ = new_bb();
             node->continue_ = new_bb();
 
-            int r = gen_expr(node->cond);
+            Reg *r = gen_expr(node->cond);
             for (int i = 0; i < node->cases->len; i++) {
                 Node *case_ = node->cases->data[i];
                 case_->bb = new_bb();
 
                 BB *next = new_bb();
-                int r2 = nreg++;
+                Reg *r2 = new_reg();
 
                 imm(r2, case_->val);
                 emit(IR_EQ, r2, r);
@@ -399,8 +406,8 @@ static void gen_stmt(Node *node) {
             jmp(node->target->continue_);
             break;
         case ND_RETURN: {
-            int r = gen_expr(node->expr);
-            emit(IR_RETURN, r, -1);
+            Reg *r = gen_expr(node->expr);
+            emit(IR_RETURN, r, NULL);
             kill(r);
 
             BB *bb = new_bb();

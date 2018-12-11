@@ -283,9 +283,14 @@ typedef struct BB {
 } BB;
 
 typedef struct {
+    int vn;
+    int rn;
+} Reg;
+
+typedef struct {
     int op;
-    int r0;
-    int r2;
+    Reg *r0;
+    Reg *r2;
     int imm;
     int imm2;
     int label;
@@ -294,7 +299,7 @@ typedef struct {
     int size;
     char *name;
     int nargs;
-    int args[6];
+    Reg *args[6];
     Vector *kill;
 } IR;
 
