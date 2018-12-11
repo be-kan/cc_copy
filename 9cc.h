@@ -265,7 +265,6 @@ enum {
     IR_MOV,
     IR_RETURN,
     IR_CALL,
-    IR_LABEL,
     IR_LABEL_ADDR,
     IR_EQ,
     IR_NE,
